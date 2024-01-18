@@ -484,8 +484,14 @@ public class ChessPiece {
             }
         }
 
-        //pawn
-
+        if (type == PieceType.PAWN) {//pawn
+            var team = getTeamColor();
+            if (team == ChessGame.TeamColor.WHITE) {
+                var currRow = initRow + 1;
+                ChessPosition newPosition = new ChessPosition(currRow, initCol);
+                possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), newPosition, null));
+            }
+        }
         //return the arraylist
         return possMoves;
     }
