@@ -452,8 +452,38 @@ public class ChessPiece {
                 }
             }
             //go left, go right
-
+            var currCol = initCol - 1;
+            if (currCol > 0) {
+                ChessPosition newPosition = new ChessPosition(initRow, currCol);
+                //check if there is a piece there
+                if (board.getPiece(newPosition) != null) {
+                    var currPiece = board.getPiece(newPosition);
+                    if (currPiece.getTeamColor() != this.pieceColor) {
+                        possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), newPosition,
+                                null));
+                    }
+                } else {
+                    possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), newPosition,
+                            null));
+                }
+            }
+            currCol = initCol + 1;
+            if (currCol <= 8) {
+                ChessPosition newPosition = new ChessPosition(initRow, currCol);
+                //check if there is a piece there
+                if (board.getPiece(newPosition) != null) {
+                    var currPiece = board.getPiece(newPosition);
+                    if (currPiece.getTeamColor() != this.pieceColor) {
+                        possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), newPosition,
+                                null));
+                    }
+                } else {
+                    possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), newPosition,
+                            null));
+                }
+            }
         }
+
         //pawn
 
         //return the arraylist
