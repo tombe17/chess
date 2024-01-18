@@ -3,6 +3,7 @@ package chess;
 import java.sql.Array;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 
 /**
  * Represents a single chess piece
@@ -55,7 +56,7 @@ public class ChessPiece {
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         //first make an ArrayList, init position
-        ArrayList<ChessMove> possMoves = new ArrayList<>();
+        HashSet<ChessMove> possMoves = new HashSet<>();
         int initRow = myPosition.getRow();
         int initCol = myPosition.getColumn();
         //then based on the type, start looping through possible locations
@@ -509,15 +510,25 @@ public class ChessPiece {
                 }
                 //check to sides to attack
                 currRow = initRow + 1;
+                boolean promo = currRow == 8;
                 var leftCol = initCol - 1;
                 var rightCol = initCol + 1;
                 if (leftCol > 0) { //go left, check if there is a piece to attack, and then get the team
                     ChessPosition leftPosition = new ChessPosition(currRow, leftCol);
+
                     if (!CheckIfEmpty(board, leftPosition)) {
                         var currPiece = board.getPiece(leftPosition);
                         if (currPiece.getTeamColor() != this.pieceColor) {
-                            possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), leftPosition,
-                                    null));
+                            if (promo) {
+                                //add promo moves
+                                possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), leftPosition, PieceType.BISHOP));
+                                possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), leftPosition, PieceType.QUEEN));
+                                possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), leftPosition, PieceType.ROOK));
+                                possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), leftPosition, PieceType.KNIGHT));
+                            } else {
+                                possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), leftPosition,
+                                        null));
+                            }
                         }
                     }
                 }
@@ -526,8 +537,15 @@ public class ChessPiece {
                     if (!CheckIfEmpty(board, rightPosition)) {
                         var currPiece = board.getPiece(rightPosition);
                         if (currPiece.getTeamColor() != this.pieceColor) {
-                            possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), rightPosition,
-                                    null));
+                            if (promo) {
+                                possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), rightPosition, PieceType.BISHOP));
+                                possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), rightPosition, PieceType.QUEEN));
+                                possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), rightPosition, PieceType.ROOK));
+                                possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), rightPosition, PieceType.KNIGHT));
+                            } else {
+                                possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), rightPosition,
+                                        null));
+                            }
                         }
                     }
                 }
@@ -557,6 +575,7 @@ public class ChessPiece {
                 }
                 //check to sides to attack
                 currRow = initRow - 1;
+                boolean promo = currRow == 1;
                 var leftCol = initCol - 1;
                 var rightCol = initCol + 1;
                 if (leftCol > 0) { //go left, check if there is a piece to attack, and then get the team
@@ -564,8 +583,15 @@ public class ChessPiece {
                     if (!CheckIfEmpty(board, leftPosition)) {
                         var currPiece = board.getPiece(leftPosition);
                         if (currPiece.getTeamColor() != this.pieceColor) {
-                            possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), leftPosition,
-                                    null));
+                            if (promo) {
+                                possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), leftPosition, PieceType.BISHOP));
+                                possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), leftPosition, PieceType.QUEEN));
+                                possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), leftPosition, PieceType.ROOK));
+                                possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), leftPosition, PieceType.KNIGHT));
+                            } else {
+                                possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), leftPosition,
+                                        null));
+                            }
                         }
                     }
                 }
@@ -574,8 +600,15 @@ public class ChessPiece {
                     if (!CheckIfEmpty(board, rightPosition)) {
                         var currPiece = board.getPiece(rightPosition);
                         if (currPiece.getTeamColor() != this.pieceColor) {
-                            possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), rightPosition,
-                                    null));
+                            if (promo) {
+                                possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), rightPosition, PieceType.BISHOP));
+                                possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), rightPosition, PieceType.QUEEN));
+                                possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), rightPosition, PieceType.ROOK));
+                                possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), rightPosition, PieceType.KNIGHT));
+                            } else {
+                                possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), rightPosition,
+                                        null));
+                            }
                         }
                     }
                 }
