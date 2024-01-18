@@ -59,7 +59,7 @@ public class ChessPiece {
         int initRow = myPosition.getRow();
         int initCol = myPosition.getColumn();
         //then based on the type, start looping through possible locations
-        if (type == PieceType.BISHOP) {
+        if (type == PieceType.BISHOP || type == PieceType.QUEEN) {
             //loop through diagonally to the right
             int newRow = initRow + 1;
             int newCol = initCol + 1;
@@ -141,6 +141,321 @@ public class ChessPiece {
             }
 
         }
+
+        if (type == PieceType.ROOK || type == PieceType.QUEEN) {
+            //go to the right
+            int rookCol = initCol + 1;
+            while (rookCol <= 8) {
+                ChessPosition newPosition = new ChessPosition(initRow, rookCol);
+                //check if there is a piece there
+                if (board.getPiece(newPosition) != null) {
+                    var currPiece = board.getPiece(newPosition);
+                    if (currPiece.getTeamColor() != this.pieceColor) {
+                        possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), newPosition,
+                                null));
+                    }
+                    break;
+                }
+                //add to collection
+                possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), newPosition,
+                null));
+                rookCol++;
+            }
+            //go left
+            rookCol = initCol - 1;
+            while (rookCol > 0) {
+                ChessPosition newPosition = new ChessPosition(initRow, rookCol);
+                //check if there is a piece there
+                if (board.getPiece(newPosition) != null) {
+                    var currPiece = board.getPiece(newPosition);
+                    if (currPiece.getTeamColor() != this.pieceColor) {
+                        possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), newPosition,
+                                null));
+                    }
+                    break;
+                }
+                //add to collection
+                possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), newPosition,
+                        null));
+                rookCol--;
+            }
+            //go UP
+            int rookRow = initRow + 1;
+            while (rookRow <= 8) {
+                ChessPosition newPosition = new ChessPosition(rookRow, initCol);
+                //check if there is a piece there
+                if (board.getPiece(newPosition) != null) {
+                    var currPiece = board.getPiece(newPosition);
+                    if (currPiece.getTeamColor() != this.pieceColor) {
+                        possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), newPosition,
+                                null));
+                    }
+                    break;
+                }
+                //add to collection
+                possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), newPosition,
+                        null));
+                rookRow++;
+            }
+            //go down
+            rookRow = initRow - 1;
+            while (rookRow > 0) {
+                ChessPosition newPosition = new ChessPosition(rookRow, initCol);
+                //check if there is a piece there
+                if (board.getPiece(newPosition) != null) {
+                    var currPiece = board.getPiece(newPosition);
+                    if (currPiece.getTeamColor() != this.pieceColor) {
+                        possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), newPosition,
+                                null));
+                    }
+                    break;
+                }
+                //add to collection
+                possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), newPosition,
+                        null));
+                rookRow--;
+            }
+        }
+
+        if (type == PieceType.KNIGHT) {
+            //go two rows up and then one to the left and right
+            var currRow = initRow + 2;
+            if (currRow <= 8) { //first check if that goes out of bounds
+                var currCol = initCol - 1;
+                if (currCol > 0) {
+                    ChessPosition newPosition = new ChessPosition(currRow, currCol);
+                    //check if there is a piece there
+                    if (board.getPiece(newPosition) != null) {
+                        var currPiece = board.getPiece(newPosition);
+                        if (currPiece.getTeamColor() != this.pieceColor) {
+                            possMoves.add(new ChessMove(new ChessPosition(initRow,initCol), newPosition,
+                                    null));
+                        }
+                    } else { //if not still add a spot cuz it's valid
+                        possMoves.add(new ChessMove(new ChessPosition(initRow,initCol), newPosition,
+                                null));
+                    }
+                }
+                currCol = initCol + 1;
+                if (currCol <= 8) {
+                    ChessPosition newPosition = new ChessPosition(currRow, currCol);
+                    //check if there is a piece there
+                    if (board.getPiece(newPosition) != null) {
+                        var currPiece = board.getPiece(newPosition);
+                        if (currPiece.getTeamColor() != this.pieceColor) {
+                            possMoves.add(new ChessMove(new ChessPosition(initRow,initCol), newPosition,
+                                    null));
+                        }
+                    } else {
+                        possMoves.add(new ChessMove(new ChessPosition(initRow,initCol), newPosition,
+                                null));
+                    }
+                }
+            }
+            //go down 2, then left and right 1
+            currRow = initRow - 2;
+            if (currRow > 0) { //first check if that goes out of bounds
+                var currCol = initCol - 1;
+                if (currCol > 0) {
+                    ChessPosition newPosition = new ChessPosition(currRow, currCol);
+                    //check if there is a piece there
+                    if (board.getPiece(newPosition) != null) {
+                        var currPiece = board.getPiece(newPosition);
+                        if (currPiece.getTeamColor() != this.pieceColor) {
+                            possMoves.add(new ChessMove(new ChessPosition(initRow,initCol), newPosition,
+                                    null));
+                        }
+                    } else { //if not still add a spot cuz it's valid
+                        possMoves.add(new ChessMove(new ChessPosition(initRow,initCol), newPosition,
+                                null));
+                    }
+                }
+                currCol = initCol + 1;
+                if (currCol <= 8) {
+                    ChessPosition newPosition = new ChessPosition(currRow, currCol);
+                    //check if there is a piece there
+                    if (board.getPiece(newPosition) != null) {
+                        var currPiece = board.getPiece(newPosition);
+                        if (currPiece.getTeamColor() != this.pieceColor) {
+                            possMoves.add(new ChessMove(new ChessPosition(initRow,initCol), newPosition,
+                                    null));
+                        }
+                    } else {
+                        possMoves.add(new ChessMove(new ChessPosition(initRow,initCol), newPosition,
+                                null));
+                    }
+                }
+            }
+            //go left 2, up and down 1
+            var currCol = initCol - 2;
+            if (currCol > 0) { //first check if that goes out of bounds
+                currRow = initRow - 1;
+                if (currRow > 0) {
+                    ChessPosition newPosition = new ChessPosition(currRow, currCol);
+                    //check if there is a piece there
+                    if (board.getPiece(newPosition) != null) {
+                        var currPiece = board.getPiece(newPosition);
+                        if (currPiece.getTeamColor() != this.pieceColor) {
+                            possMoves.add(new ChessMove(new ChessPosition(initRow,initCol), newPosition,
+                                    null));
+                        }
+                    } else { //if not still add a spot cuz it's valid
+                        possMoves.add(new ChessMove(new ChessPosition(initRow,initCol), newPosition,
+                                null));
+                    }
+                }
+                currRow = initRow + 1;
+                if (currRow <= 8) {
+                    ChessPosition newPosition = new ChessPosition(currRow, currCol);
+                    //check if there is a piece there
+                    if (board.getPiece(newPosition) != null) {
+                        var currPiece = board.getPiece(newPosition);
+                        if (currPiece.getTeamColor() != this.pieceColor) {
+                            possMoves.add(new ChessMove(new ChessPosition(initRow,initCol), newPosition,
+                                    null));
+                        }
+                    } else {
+                        possMoves.add(new ChessMove(new ChessPosition(initRow,initCol), newPosition,
+                                null));
+                    }
+                }
+            }
+            //go right 2
+            currCol = initCol + 2;
+            if (currCol <= 8) { //first check if that goes out of bounds
+                currRow = initRow - 1;
+                if (currRow > 0) {
+                    ChessPosition newPosition = new ChessPosition(currRow, currCol);
+                    //check if there is a piece there
+                    if (board.getPiece(newPosition) != null) {
+                        var currPiece = board.getPiece(newPosition);
+                        if (currPiece.getTeamColor() != this.pieceColor) {
+                            possMoves.add(new ChessMove(new ChessPosition(initRow,initCol), newPosition,
+                                    null));
+                        }
+                    } else { //if not still add a spot cuz it's valid
+                        possMoves.add(new ChessMove(new ChessPosition(initRow,initCol), newPosition,
+                                null));
+                    }
+                }
+                currRow = initRow + 1;
+                if (currRow <= 8) {
+                    ChessPosition newPosition = new ChessPosition(currRow, currCol);
+                    //check if there is a piece there
+                    if (board.getPiece(newPosition) != null) {
+                        var currPiece = board.getPiece(newPosition);
+                        if (currPiece.getTeamColor() != this.pieceColor) {
+                            possMoves.add(new ChessMove(new ChessPosition(initRow,initCol), newPosition,
+                                    null));
+                        }
+                    } else {
+                        possMoves.add(new ChessMove(new ChessPosition(initRow,initCol), newPosition,
+                                null));
+                    }
+                }
+            }
+        }
+
+        if (type == PieceType.KING) {
+            //go up, then left and right
+            var currRow = initRow + 1;
+            if (currRow <= 8) {
+                ChessPosition newPosition = new ChessPosition(currRow, initCol);
+                //check if there is a piece there
+                if (board.getPiece(newPosition) != null) {
+                    var currPiece = board.getPiece(newPosition);
+                    if (currPiece.getTeamColor() != this.pieceColor) {
+                        possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), newPosition,
+                                null));
+                    }
+                } else {
+                    possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), newPosition,
+                            null));
+                }
+                //go left and right and repeat
+                var currCol = initCol - 1;
+                if (currCol > 0) {
+                    newPosition = new ChessPosition(currRow, currCol);
+                    //check if there is a piece there
+                    if (board.getPiece(newPosition) != null) {
+                        var currPiece = board.getPiece(newPosition);
+                        if (currPiece.getTeamColor() != this.pieceColor) {
+                            possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), newPosition,
+                                    null));
+                        }
+                    } else {
+                        possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), newPosition,
+                                null));
+                    }
+                }
+                currCol = initCol + 1;
+                if (currCol <= 8) {
+                    newPosition = new ChessPosition(currRow, currCol);
+                    //check if there is a piece there
+                    if (board.getPiece(newPosition) != null) {
+                        var currPiece = board.getPiece(newPosition);
+                        if (currPiece.getTeamColor() != this.pieceColor) {
+                            possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), newPosition,
+                                    null));
+                        }
+                    } else {
+                        possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), newPosition,
+                                null));
+                    }
+                }
+            }
+            //go down, left and right
+            currRow = initRow - 1;
+            if (currRow > 0) {
+                ChessPosition newPosition = new ChessPosition(currRow, initCol);
+                //check if there is a piece there
+                if (board.getPiece(newPosition) != null) {
+                    var currPiece = board.getPiece(newPosition);
+                    if (currPiece.getTeamColor() != this.pieceColor) {
+                        possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), newPosition,
+                                null));
+                    }
+                } else {
+                    possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), newPosition,
+                            null));
+                }
+                //go left and right and repeat
+                var currCol = initCol - 1;
+                if (currCol > 0) {
+                    newPosition = new ChessPosition(currRow, currCol);
+                    //check if there is a piece there
+                    if (board.getPiece(newPosition) != null) {
+                        var currPiece = board.getPiece(newPosition);
+                        if (currPiece.getTeamColor() != this.pieceColor) {
+                            possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), newPosition,
+                                    null));
+                        }
+                    } else {
+                        possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), newPosition,
+                                null));
+                    }
+                }
+                currCol = initCol + 1;
+                if (currCol <= 8) {
+                    newPosition = new ChessPosition(currRow, currCol);
+                    //check if there is a piece there
+                    if (board.getPiece(newPosition) != null) {
+                        var currPiece = board.getPiece(newPosition);
+                        if (currPiece.getTeamColor() != this.pieceColor) {
+                            possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), newPosition,
+                                    null));
+                        }
+                    } else {
+                        possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), newPosition,
+                                null));
+                    }
+                }
+            }
+            //go left, go right
+
+        }
+        //pawn
+
         //return the arraylist
         return possMoves;
     }
