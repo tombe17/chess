@@ -490,6 +490,10 @@ public class ChessPiece {
                 var currRow = initRow + 1;
                 ChessPosition newPosition = new ChessPosition(currRow, initCol);
                 possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), newPosition, null));
+            } else {    //can assume it's black team
+                var currRow = initRow - 1;
+                ChessPosition newPosition = new ChessPosition(currRow, initCol);
+                possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), newPosition, null));
             }
         }
         //return the arraylist
