@@ -507,11 +507,35 @@ public class ChessPiece {
                         }
                     }
                 }
+                //check to sides to attack
+                currRow = initRow + 1;
+                var leftCol = initCol - 1;
+                var rightCol = initCol + 1;
+                if (leftCol > 0) { //go left, check if there is a piece to attack, and then get the team
+                    ChessPosition leftPosition = new ChessPosition(currRow, leftCol);
+                    if (!CheckIfEmpty(board, leftPosition)) {
+                        var currPiece = board.getPiece(leftPosition);
+                        if (currPiece.getTeamColor() != this.pieceColor) {
+                            possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), leftPosition,
+                                    null));
+                        }
+                    }
+                }
+                if (rightCol <= 8) { //go right, check if there is a piece to attack, and then get the team
+                    ChessPosition rightPosition = new ChessPosition(currRow, rightCol);
+                    if (!CheckIfEmpty(board, rightPosition)) {
+                        var currPiece = board.getPiece(rightPosition);
+                        if (currPiece.getTeamColor() != this.pieceColor) {
+                            possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), rightPosition,
+                                    null));
+                        }
+                    }
+                }
 
             } else {    //can assume it's black team
                 var currRow = initRow - 1;
                 ChessPosition newPosition = new ChessPosition(currRow, initCol);
-
+                //check right in front of the pawn for movement
                 if (CheckIfEmpty(board, newPosition)) {
                     if (currRow == 1) {
                         possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), newPosition, PieceType.BISHOP));
@@ -528,6 +552,30 @@ public class ChessPiece {
 
                         if (CheckIfEmpty(board, twoPosition)) {
                             possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), twoPosition, null));
+                        }
+                    }
+                }
+                //check to sides to attack
+                currRow = initRow - 1;
+                var leftCol = initCol - 1;
+                var rightCol = initCol + 1;
+                if (leftCol > 0) { //go left, check if there is a piece to attack, and then get the team
+                    ChessPosition leftPosition = new ChessPosition(currRow, leftCol);
+                    if (!CheckIfEmpty(board, leftPosition)) {
+                        var currPiece = board.getPiece(leftPosition);
+                        if (currPiece.getTeamColor() != this.pieceColor) {
+                            possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), leftPosition,
+                                    null));
+                        }
+                    }
+                }
+                if (rightCol <= 8) { //go right, check if there is a piece to attack, and then get the team
+                    ChessPosition rightPosition = new ChessPosition(currRow, rightCol);
+                    if (!CheckIfEmpty(board, rightPosition)) {
+                        var currPiece = board.getPiece(rightPosition);
+                        if (currPiece.getTeamColor() != this.pieceColor) {
+                            possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), rightPosition,
+                                    null));
                         }
                     }
                 }
