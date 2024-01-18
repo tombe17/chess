@@ -490,10 +490,20 @@ public class ChessPiece {
                 var currRow = initRow + 1;
                 ChessPosition newPosition = new ChessPosition(currRow, initCol);
                 possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), newPosition, null));
+                if (initRow == 2) { //starting row for white give an extra space
+                    currRow++;
+                    ChessPosition twoPosition = new ChessPosition(currRow, initCol);
+                    possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), twoPosition, null));
+                }
             } else {    //can assume it's black team
                 var currRow = initRow - 1;
                 ChessPosition newPosition = new ChessPosition(currRow, initCol);
                 possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), newPosition, null));
+                if (initRow == 7) { //starting row for white give an extra space
+                    currRow--;
+                    ChessPosition twoPosition = new ChessPosition(currRow, initCol);
+                    possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), twoPosition, null));
+                }
             }
         }
         //return the arraylist
