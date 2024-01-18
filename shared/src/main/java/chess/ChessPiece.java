@@ -502,7 +502,9 @@ public class ChessPiece {
                     if (initRow == 2) { //starting row for white give an extra space
                         currRow++;
                         ChessPosition twoPosition = new ChessPosition(currRow, initCol);
-                        possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), twoPosition, null));
+                        if (CheckIfEmpty(board, twoPosition)) {
+                            possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), twoPosition, null));
+                        }
                     }
                 }
 
@@ -523,7 +525,10 @@ public class ChessPiece {
                     if (initRow == 7) { //starting row for white give an extra space
                         currRow--;
                         ChessPosition twoPosition = new ChessPosition(currRow, initCol);
-                        possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), twoPosition, null));
+
+                        if (CheckIfEmpty(board, twoPosition)) {
+                            possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), twoPosition, null));
+                        }
                     }
                 }
 
@@ -536,5 +541,6 @@ public class ChessPiece {
     public boolean CheckIfEmpty(ChessBoard board, ChessPosition checkPosition) { //return true if empty, false if not
         return board.getPiece(checkPosition) == null;
     }
+
 
 }
