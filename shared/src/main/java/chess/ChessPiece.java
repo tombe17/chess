@@ -489,7 +489,14 @@ public class ChessPiece {
             if (team == ChessGame.TeamColor.WHITE) {
                 var currRow = initRow + 1;
                 ChessPosition newPosition = new ChessPosition(currRow, initCol);
-                possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), newPosition, null));
+                if (currRow == 8) { //add move where they get promoted
+                    possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), newPosition, PieceType.BISHOP));
+                    possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), newPosition, PieceType.QUEEN));
+                    possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), newPosition, PieceType.ROOK));
+                    possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), newPosition, PieceType.KNIGHT));
+                } else {
+                    possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), newPosition, null));
+                }
                 if (initRow == 2) { //starting row for white give an extra space
                     currRow++;
                     ChessPosition twoPosition = new ChessPosition(currRow, initCol);
@@ -498,7 +505,15 @@ public class ChessPiece {
             } else {    //can assume it's black team
                 var currRow = initRow - 1;
                 ChessPosition newPosition = new ChessPosition(currRow, initCol);
-                possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), newPosition, null));
+                if (currRow == 1) {
+                    possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), newPosition, PieceType.BISHOP));
+                    possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), newPosition, PieceType.QUEEN));
+                    possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), newPosition, PieceType.ROOK));
+                    possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), newPosition, PieceType.KNIGHT));
+                } else {
+                    possMoves.add(new ChessMove(new ChessPosition(initRow, initCol), newPosition, null));
+                }
+
                 if (initRow == 7) { //starting row for white give an extra space
                     currRow--;
                     ChessPosition twoPosition = new ChessPosition(currRow, initCol);
