@@ -32,7 +32,7 @@ public class ChessBoard {
      * @return Either the piece at the position, or null if no piece is at that
      * position
      */
-    public ChessPiece getPiece(ChessPosition position) { //-1 to translate from row to index
+    public ChessPiece getPiece(ChessPosition position) {
         return board[position.getRow() - 1][position.getColumn() - 1];
     }
 
@@ -41,39 +41,46 @@ public class ChessBoard {
      * (How the game of chess normally starts)
      */
     public void resetBoard() {
-        var currRow = 8;
-        var currCol = 8;
-        //make the back row
-        addPiece(new ChessPosition(currRow, 1), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.ROOK));
-        addPiece(new ChessPosition(currRow, 8), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.ROOK));
-        addPiece(new ChessPosition(currRow, 2), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KNIGHT));
-        addPiece(new ChessPosition(currRow, 7), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KNIGHT));
-        addPiece(new ChessPosition(currRow, 3), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.BISHOP));
-        addPiece(new ChessPosition(currRow, 6), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.BISHOP));
-        addPiece(new ChessPosition(currRow, 4), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.QUEEN));
-        addPiece(new ChessPosition(currRow, 5), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KING));
-        //iterate for pawns
-        currRow = 7;
-        currCol = 1;
-        for (int i = currCol; i < 9; i++) {
-            addPiece(new ChessPosition(currRow, i), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN));
+        //for reset first clear board then cycle through
+        for(int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                board[i][j] = null;
+            }
         }
-        //make white pawns
-        currRow = 2;
-        for (int i = currCol; i < 9; i++) {
-            addPiece(new ChessPosition(currRow, i), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN));
-        }
-        //make white bottom row
-        currRow = 1;
-        addPiece(new ChessPosition(currRow, 1), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.ROOK));
-        addPiece(new ChessPosition(currRow, 8), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.ROOK));
-        addPiece(new ChessPosition(currRow, 2), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KNIGHT));
-        addPiece(new ChessPosition(currRow, 7), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KNIGHT));
-        addPiece(new ChessPosition(currRow, 3), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.BISHOP));
-        addPiece(new ChessPosition(currRow, 6), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.BISHOP));
-        addPiece(new ChessPosition(currRow, 4), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.QUEEN));
-        addPiece(new ChessPosition(currRow, 5), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KING));
+        populateRoyals(ChessGame.TeamColor.BLACK);
+        populateRoyals(ChessGame.TeamColor.WHITE);
+        populatePawns(ChessGame.TeamColor.BLACK);
+        populatePawns(ChessGame.TeamColor.WHITE);
+    }
 
+    //have helper functions for adding royalty and pawns
+    public void populateRoyals(ChessGame.TeamColor team) {
+        int row;
+        if (team == ChessGame.TeamColor.BLACK) {
+            row = 8;
+        } else {
+            row = 1;
+        }
+        addPiece(new ChessPosition(row, 1), new ChessPiece(team, ChessPiece.PieceType.ROOK));
+        addPiece(new ChessPosition(row, 8), new ChessPiece(team, ChessPiece.PieceType.ROOK));
+        addPiece(new ChessPosition(row, 2), new ChessPiece(team, ChessPiece.PieceType.KNIGHT));
+        addPiece(new ChessPosition(row, 7), new ChessPiece(team, ChessPiece.PieceType.KNIGHT));
+        addPiece(new ChessPosition(row, 3), new ChessPiece(team, ChessPiece.PieceType.BISHOP));
+        addPiece(new ChessPosition(row, 6), new ChessPiece(team, ChessPiece.PieceType.BISHOP));
+        addPiece(new ChessPosition(row, 4), new ChessPiece(team, ChessPiece.PieceType.QUEEN));
+        addPiece(new ChessPosition(row, 5), new ChessPiece(team, ChessPiece.PieceType.KING));
+    }
+
+    public void populatePawns(ChessGame.TeamColor team) {
+        int row;
+        if (team == ChessGame.TeamColor.WHITE) {
+            row = 2;
+        } else {
+            row = 7;
+        }
+        for (int i = 0; i < 8; i++) {
+            addPiece(new ChessPosition(row, i + 1), new ChessPiece(team, ChessPiece.PieceType.PAWN));
+        }
     }
 
     @Override
@@ -81,12 +88,7 @@ public class ChessBoard {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ChessBoard that = (ChessBoard) o;
-        //check if arrays are the same
-        if (!Arrays.deepEquals(board, that.board)) {
-            return false;
-        }
-
-        return true;
+        return Arrays.deepEquals(board, that.board);
     }
 
     @Override
