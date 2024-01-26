@@ -53,6 +53,10 @@ public class ChessBoard {
         populatePawns(ChessGame.TeamColor.WHITE);
     }
 
+    public  void removePiece(ChessPosition remPosition) {
+        board[remPosition.getRow() - 1][remPosition.getColumn() - 1] = null;
+    }
+
     //have helper functions for adding royalty and pawns
     public void populateRoyals(ChessGame.TeamColor team) {
         int row;
