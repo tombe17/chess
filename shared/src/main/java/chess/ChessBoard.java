@@ -1,6 +1,8 @@
 package chess;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 
 /**
  * A chessboard that can hold and rearrange chess pieces.
@@ -53,8 +55,36 @@ public class ChessBoard {
         populatePawns(ChessGame.TeamColor.WHITE);
     }
 
-    public  void removePiece(ChessPosition remPosition) {
+    public void removePiece(ChessPosition remPosition) {
         board[remPosition.getRow() - 1][remPosition.getColumn() - 1] = null;
+    }
+
+    public Collection<ChessPosition> getTeamPositions(ChessGame.TeamColor team) {
+        HashSet<ChessPosition> teamPositions = new HashSet<>();
+        ChessPiece curPiece;
+        //iterate through array and check each spot if it's on the opp team
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                curPiece = board[i][j];
+                if (curPiece != null && curPiece.getTeamColor() == team) {
+                    teamPositions.add(new ChessPosition(i + 1,j + 1));
+                }
+            }
+        }
+        //return list of opp team positions
+        return teamPositions;
+    }
+
+    public ChessPosition getKingPosition(ChessGame.TeamColor kingTeam) {
+        Collection<ChessPosition> teamPositions = getTeamPositions(kingTeam);
+        //iterate through and return the king position
+        for (ChessPosition curPosition : teamPositions) {
+            if (getPiece(curPosition).getPieceType() == ChessPiece.PieceType.KING) {
+                return curPosition;
+            }
+        }
+        //couldn't find king and so is wrong
+        return null;
     }
 
     //have helper functions for adding royalty and pawns
