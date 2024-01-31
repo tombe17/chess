@@ -64,11 +64,13 @@ public class ChessGame {
     public void makeMove(ChessMove move) throws InvalidMoveException {
         //First if there are exceptions throw it, else make the move
         var movePiece = board.getPiece(move.getStartPosition());
-        //wrong team CHECK IF IN CHECK AND IF AFTER MOVE YOU WON'T BE IN CHECK
+        //wrong team
         if (movePiece.getTeamColor() != currTeam) {
             throw new InvalidMoveException("Not your team.");
         }else if (!checkAttackPos(move.getStartPosition(), move.getEndPosition())) { //not a valid move
             throw new InvalidMoveException("Invalid move.");
+        } else if (isInCheck(currTeam) && !willBlockCheck(move)) { //CHECK IF IN CHECK AND IF AFTER MOVE YOU WON'T BE IN CHECK
+            throw new InvalidMoveException("Still in Check");
         } else {
             //using a given move it will move the piece to the new position and remove the old piece there
             board.addPiece(move.getEndPosition(), board.getPiece(move.getStartPosition()));
@@ -160,7 +162,39 @@ public class ChessGame {
         }
         return false;
     }
+    /**
+     *returns true if the move blocks check
+     * else returns false
+     */
+    public boolean willBlockCheck(ChessMove move) {
+        var blockPiece = board.getPiece(move.getStartPosition());
+        if (blockPiece != null) {
+            ChessBoard tempBoard = board.copyBoard();
+            //with our tempBoard we check the move and then see if the King is still in check
+            tempBoard.addPiece(move.getEndPosition(), tempBoard.getPiece(move.getStartPosition()));
+            tempBoard.removePiece(move.getStartPosition());
 
+            Collection<ChessPosition> oppTeamPositions = tempBoard.getTeamPositions(getOppTeam());
+            ChessPosition kingPos = tempBoard.getKingPosition(currTeam);
+            Collection<ChessMove> attackMoves;
+
+            for (ChessPosition currPosition : oppTeamPositions) {
+                attackMoves = tempBoard.getPiece(currPosition).pieceMoves(tempBoard, currPosition);
+                for (ChessMove possMove : attackMoves) {
+                    if (possMove.getEndPosition().equals(kingPos)) {
+                        return false; //can still be checked
+                    }
+                }
+
+            }
+            return true; //no attacks hit king
+        }
+        return false; //this move was null and didn't stop check
+    }
+
+    public TeamColor getOppTeam() {
+        return getTeamTurn() == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE;
+    }
 
     @Override
     public boolean equals(Object o) {

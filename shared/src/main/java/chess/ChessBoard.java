@@ -117,6 +117,20 @@ public class ChessBoard {
         }
     }
 
+    public ChessBoard copyBoard() {
+        ChessBoard copyBoard = new ChessBoard();
+        for(int i = 1; i < 9; i++) {
+            for (int j = 1; j < 9; j++) {
+                var position = new ChessPosition(i, j);
+                var currPiece = getPiece(position);
+                if (currPiece != null) {
+                copyBoard.addPiece(position, new ChessPiece(currPiece.getTeamColor(),currPiece.getPieceType()));
+                }
+            }
+        }
+        return copyBoard;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
