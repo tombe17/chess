@@ -120,11 +120,23 @@ public class ChessGame {
      */
     public boolean isInCheckmate(TeamColor teamColor) {
         //first check if in check
-//        if (isInCheck(teamColor)) {
-//
-//        } else {
-//            return false;
-//        }
+        if (isInCheck(teamColor)) {
+            //then get each move the team can make and see if any of them can break it
+            Collection<ChessPosition> myPositions = board.getTeamPositions(teamColor);
+            Collection<ChessMove> possMoves;
+            for (ChessPosition currPosition : myPositions) {
+                possMoves = validMoves(currPosition);
+                for (ChessMove currMove : possMoves) {
+                    if (willBlockCheck(currMove)) {
+                        return false; //if the move blocks check then return false
+                    }
+                }
+            }
+            return true; //if no moves can block, then in checkmate
+
+        } else {
+            return false;
+        }
 
     }
 
