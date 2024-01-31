@@ -148,7 +148,32 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        //Condition - NOT in check, no movements besides the king, king can't move
+        if (!isInCheck(teamColor)) {
+            //get King's spot and iterate through your positions
+            var kingPos = board.getKingPosition(teamColor);
+            Collection<ChessPosition> piecePositions = board.getTeamPositions(teamColor);
+            Collection<ChessMove> possMoves;
+
+            for (ChessPosition curPos : piecePositions) {
+                //if not King - is there any moves?
+                possMoves = validMoves(curPos);
+                if (!curPos.equals(kingPos)) {
+                    if (!possMoves.isEmpty()) { //there are valid moves
+                        return false;
+                    }
+                } else { //if King - loop through his moves and see if he can move
+                    for (ChessMove curMove : possMoves) {
+                        if (willBlockCheck(curMove)) { //move will still be in Check
+                            return false; //The king can still move
+                        }
+                    }
+                }
+
+            }
+        }
+        //Only King left
+        return true;
     }
 
     /**
