@@ -73,8 +73,14 @@ public class ChessGame {
             throw new InvalidMoveException("Still in Check");
         } else {
             //using a given move it will move the piece to the new position and remove the old piece there
-            board.addPiece(move.getEndPosition(), board.getPiece(move.getStartPosition()));
-            board.removePiece(move.getStartPosition());
+            //if promotion piece then make sure to change the piece
+            if (move.getPromotionPiece() != null) {
+                board.addPiece(move.getEndPosition(), new ChessPiece(currTeam, move.getPromotionPiece()));
+                board.removePiece(move.getStartPosition());
+            } else {
+                board.addPiece(move.getEndPosition(), board.getPiece(move.getStartPosition()));
+                board.removePiece(move.getStartPosition());
+            }
 
             setTeamTurn(currTeam == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE);
         }
@@ -113,7 +119,13 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        //first check if in check
+//        if (isInCheck(teamColor)) {
+//
+//        } else {
+//            return false;
+//        }
+
     }
 
     /**
