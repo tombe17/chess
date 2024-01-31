@@ -146,6 +146,14 @@ public class ChessRules {
     public void checkPawnSide (ChessBoard board, ChessPosition myPosition, int moveDirection, int colChange, int promoRow) {
         var currRow = myPosition.getRow();
         var checkPosition = new ChessPosition(myPosition.getRow() + moveDirection, myPosition.getColumn() + colChange);
+        var outtaBounds = false;
+        if (checkPosition.getRow() > 8 || checkPosition.getRow() < 1) {
+            outtaBounds = true;
+        }
+        if (checkPosition.getColumn() > 8 || checkPosition.getColumn() < 1) {
+            outtaBounds = true;
+        }
+        if (!outtaBounds) {
         if (!checkIfEmpty(board, checkPosition)) {
             var checkPiece = board.getPiece(checkPosition);
             if (checkPiece.getTeamColor() != pieceColor) {
@@ -156,6 +164,7 @@ public class ChessRules {
                     makeMove(board, myPosition, myPosition, moveDirection, colChange, null, false);
                 }
             }
+        }
         }
     }
 }

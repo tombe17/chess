@@ -62,11 +62,20 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        //using a given move it will move the piece to the new position and remove the old piece there
-        board.addPiece(move.getEndPosition(), board.getPiece(move.getStartPosition()));
-        board.removePiece(move.getStartPosition());
+        //First if there are exceptions throw it, else make the move
+        var movePiece = board.getPiece(move.getStartPosition());
+        //wrong team CHECK IF IN CHECK AND IF AFTER MOVE YOU WON'T BE IN CHECK
+        if (movePiece.getTeamColor() != currTeam) {
+            throw new InvalidMoveException("Not your team.");
+        }else if (!checkAttackPos(move.getStartPosition(), move.getEndPosition())) { //not a valid move
+            throw new InvalidMoveException("Invalid move.");
+        } else {
+            //using a given move it will move the piece to the new position and remove the old piece there
+            board.addPiece(move.getEndPosition(), board.getPiece(move.getStartPosition()));
+            board.removePiece(move.getStartPosition());
 
-        setTeamTurn(currTeam == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE);
+            setTeamTurn(currTeam == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE);
+        }
     }
 
     /**
@@ -133,6 +142,25 @@ public class ChessGame {
     public ChessBoard getBoard() {
         return board;
     }
+
+    /**
+     *checks if a given piece has an end position
+     * where another piece is
+     */
+    public boolean checkAttackPos(ChessPosition attackPos, ChessPosition defendPos) {
+        //first get attackPos moves, if it exists then continue
+        var attackMoves = validMoves(attackPos);
+        if (attackMoves != null) {
+            //iterate through moves and check if there
+            for (ChessMove possMove : attackMoves) {
+                if (possMove.getEndPosition().equals(defendPos)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
 
     @Override
     public boolean equals(Object o) {
