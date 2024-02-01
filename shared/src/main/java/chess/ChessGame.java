@@ -52,7 +52,25 @@ public class ChessGame {
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         var myPiece = board.getPiece(startPosition);
-        return myPiece == null ? null : myPiece.pieceMoves(board, startPosition);
+
+        //STACK OVERFLOW FROM LOOPING
+        //what if we got all the moves, then looped through to see if they prevented check
+        if (myPiece != null) {
+            Collection<ChessMove> possMoves = myPiece.pieceMoves(board, startPosition);
+            var team = myPiece.getTeamColor();
+            //if in Check, you need to remove moves that won't block it
+//            if (isInCheck(team)) {
+            Collection<ChessMove> validMoves = new HashSet<>();
+            for (ChessMove curMove : possMoves) {
+                if (willBlockCheck(curMove, team)) {
+                    validMoves.add(curMove);
+                }
+            }
+            return validMoves;
+//            }
+//            return possMoves;
+        }
+        return null;
     }
 
     /**
@@ -69,7 +87,7 @@ public class ChessGame {
             throw new InvalidMoveException("Not your team.");
         }else if (!checkAttackPos(move.getStartPosition(), move.getEndPosition())) { //not a valid move
             throw new InvalidMoveException("Invalid move.");
-        } else if (isInCheck(currTeam) && !willBlockCheck(move)) { //CHECK IF IN CHECK AND IF AFTER MOVE YOU WON'T BE IN CHECK
+        } else if (isInCheck(currTeam) && !willBlockCheck(move, currTeam)) { //CHECK IF IN CHECK AND IF AFTER MOVE YOU WON'T BE IN CHECK
             throw new InvalidMoveException("Still in Check");
         } else {
             //using a given move it will move the piece to the new position and remove the old piece there
@@ -98,10 +116,13 @@ public class ChessGame {
         //get list of oppTeam
         Collection<ChessPosition> oppTeamPositions = board.getTeamPositions(oppTeam);
         //check each piece to see if it's attacking King
+        ChessPiece attackPiece;
         Collection<ChessMove> attackMoves;
+
         for (ChessPosition oppPosition : oppTeamPositions) {
             //get possible moves, see if an ending position will attack the king
-            attackMoves = validMoves(oppPosition);
+            attackPiece = board.getPiece(oppPosition);
+            attackMoves = attackPiece.pieceMoves(board, oppPosition);
             for (ChessMove possMove : attackMoves) {
                 if (possMove.getEndPosition().equals(kingPos)) {
                     return true;
@@ -127,7 +148,7 @@ public class ChessGame {
             for (ChessPosition currPosition : myPositions) {
                 possMoves = validMoves(currPosition);
                 for (ChessMove currMove : possMoves) {
-                    if (willBlockCheck(currMove)) {
+                    if (willBlockCheck(currMove, teamColor)) {
                         return false; //if the move blocks check then return false
                     }
                 }
@@ -164,7 +185,7 @@ public class ChessGame {
                     }
                 } else { //if King - loop through his moves and see if he can move
                     for (ChessMove curMove : possMoves) {
-                        if (willBlockCheck(curMove)) { //move will still be in Check
+                        if (willBlockCheck(curMove, teamColor)) { //move will still be in Check
                             return false; //The king can still move
                         }
                     }
@@ -213,9 +234,10 @@ public class ChessGame {
     }
     /**
      *returns true if the move blocks check
-     * else returns false
+     * else returns false CHECK WHOSE SIDE THE TEAM IS ON
+     * move is the move to check, team is the team you're checking
      */
-    public boolean willBlockCheck(ChessMove move) {
+    public boolean willBlockCheck(ChessMove move, TeamColor team) {
         var blockPiece = board.getPiece(move.getStartPosition());
         if (blockPiece != null) {
             ChessBoard tempBoard = board.copyBoard();
@@ -223,15 +245,16 @@ public class ChessGame {
             tempBoard.addPiece(move.getEndPosition(), tempBoard.getPiece(move.getStartPosition()));
             tempBoard.removePiece(move.getStartPosition());
 
-            Collection<ChessPosition> oppTeamPositions = tempBoard.getTeamPositions(getOppTeam());
-            ChessPosition kingPos = tempBoard.getKingPosition(currTeam);
+            var oppTeam = team == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE;
+            Collection<ChessPosition> oppTeamPositions = tempBoard.getTeamPositions(oppTeam);
+            ChessPosition kingPos = tempBoard.getKingPosition(team);
             Collection<ChessMove> attackMoves;
 
             for (ChessPosition currPosition : oppTeamPositions) {
                 attackMoves = tempBoard.getPiece(currPosition).pieceMoves(tempBoard, currPosition);
                 for (ChessMove possMove : attackMoves) {
                     if (possMove.getEndPosition().equals(kingPos)) {
-                        return false; //can still be checked
+                        return false; //still being attacked
                     }
                 }
 
@@ -239,10 +262,6 @@ public class ChessGame {
             return true; //no attacks hit king
         }
         return false; //this move was null and didn't stop check
-    }
-
-    public TeamColor getOppTeam() {
-        return getTeamTurn() == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE;
     }
 
     @Override
