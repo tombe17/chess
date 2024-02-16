@@ -1,13 +1,13 @@
 package server;
 
-import chess.ChessPiece;
 import com.google.gson.Gson;
 import exception.ResException;
 import model.GameData;
 import model.UserData;
-import org.eclipse.jetty.server.Authentication;
 import services.UserService;
-import spark.*;
+import spark.Request;
+import spark.Response;
+import spark.Spark;
 
 public class Server {
 

@@ -15,7 +15,6 @@ public class Main {
 
             var server = new Server().run(port);
             System.out.printf("Listening on port %d%n", port);
-            return;
         } catch (Throwable ex) {
             System.out.printf("Can't start server: %s%n", ex.getMessage());
         }
