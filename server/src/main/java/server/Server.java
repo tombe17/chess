@@ -1,6 +1,9 @@
 package server;
 
 import com.google.gson.Gson;
+import dataAccess.DataAccessException;
+import dataAccess.MemoryUserAccess;
+import dataAccess.UserDAO;
 import exception.ResException;
 import model.GameData;
 import model.UserData;
@@ -12,8 +15,9 @@ import spark.Spark;
 public class Server {
 
     private final UserService userService;
+    private final UserDAO userAccess = new MemoryUserAccess();
     public Server() {
-        userService = new UserService();
+        userService = new UserService(userAccess);
     }
     public int run(int desiredPort) {
         Spark.port(desiredPort);
@@ -43,9 +47,16 @@ public class Server {
         res.status(exc.getStatus());
     }
 
-    private Object addUser(Request req, Response res) throws ResException {
+    private Object addUser(Request req, Response res) throws ResException, DataAccessException {
         var user = new Gson().fromJson(req.body(), UserData.class);
-        return "addUser";
+        //first check if user is there, if not then add them else throw the exception
+        var userCheck = userService.getUser(user);
+        if (userCheck != null) {
+            throw new DataAccessException("User already exists.");
+        }
+        user = userService.addUser(user);
+        //then create an auth token and return that
+        return new Gson().toJson(user);
     }
     private Object loginUser(Request req, Response res) throws ResException {
         var user = new Gson().fromJson(req.body(), UserData.class);
@@ -69,6 +80,7 @@ public class Server {
     }
 
     private Object deleteAll(Request req, Response res) throws ResException {
+        userService.clear();
         return "deleteAll";
     }
 
