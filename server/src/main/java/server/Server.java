@@ -2,9 +2,12 @@ package server;
 
 import com.google.gson.Gson;
 import dataAccess.DataAccessException;
+import dataAccess.MemoryAuthAccess;
 import dataAccess.MemoryUserAccess;
 import dataAccess.UserDAO;
+import dataAccess.AuthDAO;
 import exception.ResException;
+import model.AuthData;
 import model.GameData;
 import model.UserData;
 import services.UserService;
@@ -12,12 +15,16 @@ import spark.Request;
 import spark.Response;
 import spark.Spark;
 
+import java.lang.reflect.Type;
+import java.util.Objects;
+
 public class Server {
 
     private final UserService userService;
     private final UserDAO userAccess = new MemoryUserAccess();
+    private final AuthDAO authAccess = new MemoryAuthAccess();
     public Server() {
-        userService = new UserService(userAccess);
+        userService = new UserService(userAccess, authAccess);
     }
     public int run(int desiredPort) {
         Spark.port(desiredPort);
@@ -52,18 +59,27 @@ public class Server {
         //first check if user is there, if not then add them else throw the exception
         var userCheck = userService.getUser(user);
         if (userCheck != null) {
-            throw new DataAccessException("User already exists.");
+            throw new DataAccessException("already taken");
         }
         user = userService.addUser(user);
         //then create an auth token and return that
-        return new Gson().toJson(user);
+        var auth = userService.makeAuth(user.username());
+        return new Gson().toJson(auth);
     }
-    private Object loginUser(Request req, Response res) throws ResException {
+    private Object loginUser(Request req, Response res) throws ResException, DataAccessException {
         var user = new Gson().fromJson(req.body(), UserData.class);
-        return "loginUser";
+        var memoryUser = userService.getUser(user);
+        if (!Objects.equals(user.password(), memoryUser.password())) { //check password
+           throw new DataAccessException("unauthorized");
+        }
+        var auth = userService.makeAuth(user.username());
+        return new Gson().toJson(auth);
     }
-    private Object logoutUser(Request req, Response res) throws ResException {
-        return "logoutUser";
+    private Object logoutUser(Request req, Response res) throws ResException, DataAccessException {
+        String authToken = req.headers().toString();
+        //String authToken = new Gson().fromJson(req.headers(), );
+        //userService.deleteAuth(auth);
+        return "";
     }
 
     private Object listGames(Request req, Response res) throws ResException {
@@ -81,7 +97,7 @@ public class Server {
 
     private Object deleteAll(Request req, Response res) throws ResException {
         userService.clear();
-        return "deleteAll";
+        return "";
     }
 
 }
