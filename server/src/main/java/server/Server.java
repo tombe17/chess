@@ -1,30 +1,29 @@
 package server;
 
 import com.google.gson.Gson;
-import dataAccess.DataAccessException;
-import dataAccess.MemoryAuthAccess;
-import dataAccess.MemoryUserAccess;
-import dataAccess.UserDAO;
-import dataAccess.AuthDAO;
+import dataAccess.*;
 import exception.ResException;
-import model.AuthData;
 import model.GameData;
 import model.UserData;
+import services.GameService;
 import services.UserService;
 import spark.Request;
 import spark.Response;
 import spark.Spark;
 
-import java.lang.reflect.Type;
 import java.util.Objects;
 
 public class Server {
 
     private final UserService userService;
-    private final UserDAO userAccess = new MemoryUserAccess();
-    private final AuthDAO authAccess = new MemoryAuthAccess();
+    private final GameService gameService;
+
     public Server() {
+        final UserDAO userAccess = new MemoryUserAccess();
+        final AuthDAO authAccess = new MemoryAuthAccess();
+        final GameDAO gameAccess = new MemoryGameAccess();
         userService = new UserService(userAccess, authAccess);
+        gameService = new GameService(gameAccess);
     }
     public int run(int desiredPort) {
         Spark.port(desiredPort);
@@ -97,6 +96,7 @@ public class Server {
 
     private Object deleteAll(Request req, Response res) throws ResException {
         userService.clear();
+        gameService.clear();
         return "";
     }
 
