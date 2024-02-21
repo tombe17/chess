@@ -61,8 +61,6 @@ public class Server {
         AuthData authData = null;
         String json;
 
-        //bad request
-
         authData = userService.addUser(user);
         //set up the response obj
         res.status(200);
@@ -72,15 +70,16 @@ public class Server {
 
         return res.body();
     }
-    private Object loginUser(Request req, Response res) throws DataAccessException {
-//        var user = new Gson().fromJson(req.body(), UserData.class);
-//        var memoryUser = userService.getUser(user);
-//        if (!Objects.equals(user.password(), memoryUser.password())) { //check password
-//           throw new DataAccessException("unauthorized");
-//        }
-//        var auth = userService.makeAuth(user.username());
-//        return new Gson().toJson(auth);
-        return null;
+    private Object loginUser(Request req, Response res) throws ResException {
+        var user = new Gson().fromJson(req.body(), UserData.class);
+        var userInMemory = userService.getUser(user);
+        if (!Objects.equals(user.password(), userInMemory.password())) { //check password
+           throw new ResException(401, "Error: unauthorized");
+        }
+        var auth = userService.makeAuth(user.username());
+        res.status(200);
+        res.body(new Gson().toJson(auth));
+        return res.body();
     }
     private Object logoutUser(Request req, Response res) throws DataAccessException {
         String authToken = req.headers().toString();

@@ -16,16 +16,26 @@ public class UserService {
         this.authAccess = authAccess;
     }
 
-    public UserData getUser(UserData user) throws DataAccessException {
+    public UserData getUser(UserData user) throws ResException {
         System.out.println("In US - getting user");
-        return userAccess.getUser(user.username());
+        try {
+            UserData userInMemory = userAccess.getUser(user.username());
+            if (userInMemory != null) {
+                return userInMemory;
+            } else {
+                throw new ResException(401, "Error: Unauthorized");
+            }
+        } catch (DataAccessException e) {
+            throw new ResException(500, e.getMessage());
+        }
+
     }
 
     public AuthData addUser(UserData user) throws ResException {
         System.out.println("in UserService - adding user");
         AuthData authData = null;
         try {
-            userAccess.getUser(user.username());
+            //userAccess.getUser(user.username());
             //if we do get them throw it
             if (userAccess.getUser(user.username()) == null) {
                 //no user so we can add them
@@ -45,9 +55,14 @@ public class UserService {
         }
     }
 
-    public AuthData makeAuth(String username) throws DataAccessException {
+    public AuthData makeAuth(String username) throws ResException {
         System.out.println("in US - making auth");
-        return authAccess.insertAuth(username);
+        try {
+            return authAccess.insertAuth(username);
+        } catch(DataAccessException e) {
+            throw new ResException(500, e.getMessage());
+        }
+
     }
 
     public void deleteAuth(AuthData auth) throws DataAccessException {
