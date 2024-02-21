@@ -65,9 +65,22 @@ public class UserService {
 
     }
 
-    public void deleteAuth(AuthData auth) throws DataAccessException {
+    public AuthData getAuth(String authToken) throws ResException {
+        System.out.println("in US - getting auth");
+        try {
+            return authAccess.getAuth(authToken);
+        } catch(DataAccessException e) {
+            throw new ResException(500, e.getMessage());
+        }
+    }
+
+    public void deleteAuth(AuthData auth) throws ResException {
         System.out.println("in US - deleting auth");
-        authAccess.deleteAuth(auth.authToken());
+        try {
+            authAccess.deleteAuth(auth.authToken());
+        } catch(DataAccessException e) {
+            throw new ResException(500, e.getMessage());
+        }
     }
 
     public void clear() {

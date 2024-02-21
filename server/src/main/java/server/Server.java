@@ -81,11 +81,16 @@ public class Server {
         res.body(new Gson().toJson(auth));
         return res.body();
     }
-    private Object logoutUser(Request req, Response res) throws DataAccessException {
-        String authToken = req.headers().toString();
-        //String authToken = new Gson().fromJson(req.headers(), );
-        //userService.deleteAuth(auth);
-        return "";
+    private Object logoutUser(Request req, Response res) throws ResException {
+        String authToken = req.headers("Authorization");
+        AuthData auth = userService.getAuth(authToken);
+        if (auth == null) {
+            throw new ResException(401, "Error: unauthorized");
+        } else {
+            userService.deleteAuth(auth);
+            res.status(200);
+            return "";
+        }
     }
 
     private Object listGames(Request req, Response res) throws ResException {
