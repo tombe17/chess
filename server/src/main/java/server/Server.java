@@ -3,9 +3,7 @@ package server;
 import com.google.gson.Gson;
 import dataAccess.*;
 import exception.ResException;
-import model.AuthData;
-import model.GameData;
-import model.UserData;
+import model.*;
 import services.GameService;
 import services.Message;
 import services.UserService;
@@ -13,6 +11,7 @@ import spark.Request;
 import spark.Response;
 import spark.Spark;
 
+import java.util.Collection;
 import java.util.Objects;
 
 public class Server {
@@ -38,7 +37,7 @@ public class Server {
         Spark.post("/session", this::loginUser);
         Spark.delete("/session", this::logoutUser);
         Spark.get("/game", this::listGames);
-        Spark.post("/game", this::addGame);
+        Spark.post("/game", this::createGame);
         Spark.put("/game", this::joinGame);
         Spark.exception(ResException.class, this::handleExceptions);
 
@@ -94,12 +93,31 @@ public class Server {
     }
 
     private Object listGames(Request req, Response res) throws ResException {
-        var game = new Gson().fromJson(req.body(), GameData.class);
-        return "listGames";
+        String authToken = req.headers("Authorization");
+        AuthData auth = userService.getAuth(authToken);
+        if(auth == null) {
+            throw new ResException(401, "Error: unauthorized");
+        } else {
+            Collection<GameData> games = gameService.getAllGames();
+            res.status(200);
+            return new Gson().toJson(games);
+        }
     }
-    private Object addGame(Request req, Response res) throws ResException {
-        var game = new Gson().fromJson(req.body(), GameData.class);
-        return "addGame";
+    private Object createGame(Request req, Response res) throws ResException {
+        String authToken = req.headers("Authorization");
+        AuthData auth = userService.getAuth(authToken);
+        if(auth == null) {
+            throw new ResException(401, "Error: unauthorized");
+        } else {
+            var gameName = new Gson().fromJson(req.body(), CreateChessRequest.class);
+            var game = gameService.makeGame(gameName.gameName());
+            String gameIDString = Integer.toString(game.gameID());
+            var gameRes = new CreateChessResponse(gameIDString);
+            res.status(200);
+
+            res.body(new Gson().toJson(gameRes));
+            return res.body();
+        }
     }
     private Object joinGame(Request req, Response res) throws ResException {
         //var game = new Gson().fromJson(req.body(), GameData.class);

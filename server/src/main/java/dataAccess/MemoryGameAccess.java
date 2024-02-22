@@ -1,6 +1,7 @@
 package dataAccess;
 
 
+import chess.ChessGame;
 import model.GameData;
 
 import java.util.Collection;
@@ -10,8 +11,8 @@ public class MemoryGameAccess implements GameDAO {
 
     private int nextId = 1;
     final private HashMap<Integer, GameData> games = new HashMap<>();
-    public GameData insertGame(GameData game) throws DataAccessException {
-        game = new GameData(nextId++, game.whiteUsername(), game.blackUsername(), game.gameName(), game.game());
+    public GameData insertGame(String gameName) throws DataAccessException {
+        var game = new GameData(nextId++, null, null, gameName, new ChessGame());
         games.put(game.gameID(),game);
         return game;
     }

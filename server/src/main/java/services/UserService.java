@@ -35,7 +35,6 @@ public class UserService {
         System.out.println("in UserService - adding user");
         AuthData authData = null;
         try {
-            //userAccess.getUser(user.username());
             //if we do get them throw it
             if (userAccess.getUser(user.username()) == null) {
                 //no user so we can add them
