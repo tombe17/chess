@@ -3,12 +3,10 @@ package dataAccess;
 import model.AuthData;
 
 import java.util.HashMap;
-import java.util.Random;
 import java.util.UUID;
 
 public class MemoryAuthAccess implements AuthDAO {
 
-    private String newAuthToken;
     final private HashMap<String, AuthData> auths = new HashMap<>();
     public AuthData insertAuth(String username) throws DataAccessException {
         System.out.println("inserting auth into memory");
@@ -30,15 +28,5 @@ public class MemoryAuthAccess implements AuthDAO {
 
     public void clear() {
         auths.clear();
-    }
-
-    public static String generateString(Random rng, String characters, int length)
-    {
-        char[] text = new char[length];
-        for (int i = 0; i < length; i++)
-        {
-            text[i] = characters.charAt(rng.nextInt(characters.length()));
-        }
-        return new String(text);
     }
 }

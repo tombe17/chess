@@ -10,8 +10,6 @@ import services.UserService;
 import spark.Request;
 import spark.Response;
 import spark.Spark;
-
-import java.util.Collection;
 import java.util.Objects;
 
 public class Server {
@@ -97,7 +95,7 @@ public class Server {
         if(auth == null) {
             throw new ResException(401, "Error: unauthorized");
         } else {
-            var games = new ListGamesResponse(gameService.getAllGames());
+            var games = new ListGamesResult(gameService.getAllGames());
             res.status(200);
             return new Gson().toJson(games);
         }
@@ -111,7 +109,7 @@ public class Server {
             var gameName = new Gson().fromJson(req.body(), CreateChessRequest.class);
             var game = gameService.makeGame(gameName.gameName());
             String gameIDString = Integer.toString(game.gameID());
-            var gameRes = new CreateChessResponse(gameIDString);
+            var gameRes = new CreateChessResult(gameIDString);
             res.status(200);
 
             res.body(new Gson().toJson(gameRes));
