@@ -57,10 +57,9 @@ public class Server {
 
     private Object registerUser(Request req, Response res) throws ResException {
         var user = new Gson().fromJson(req.body(), UserData.class);
-        AuthData authData = null;
         String json;
 
-        authData = userService.addUser(user);
+        AuthData authData = userService.addUser(user);
         //set up the response obj
         res.status(200);
         res.type("application/json");
@@ -98,7 +97,7 @@ public class Server {
         if(auth == null) {
             throw new ResException(401, "Error: unauthorized");
         } else {
-            Collection<GameData> games = gameService.getAllGames();
+            var games = new ListGamesResponse(gameService.getAllGames());
             res.status(200);
             return new Gson().toJson(games);
         }
@@ -120,8 +119,16 @@ public class Server {
         }
     }
     private Object joinGame(Request req, Response res) throws ResException {
-        //var game = new Gson().fromJson(req.body(), GameData.class);
-        return "joinGame";
+        AuthData auth = userService.getAuth(req.headers("Authorization"));
+        if (auth == null) {
+            throw new ResException(401, "Error: unauthorized");
+        } else {
+            var gameReq = new Gson().fromJson(req.body(), JoinGameRequest.class);
+
+            gameService.joinGame(gameReq, auth.username());
+            res.status(200);
+            return new Gson().toJson(res.body());
+        }
     }
 
     private Object deleteAll(Request req, Response res) throws ResException {
