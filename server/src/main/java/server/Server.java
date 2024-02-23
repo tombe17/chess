@@ -58,7 +58,7 @@ public class Server {
         String json;
 
         AuthData authData = userService.addUser(user);
-        //set up the response obj
+
         res.status(200);
         res.type("application/json");
         json = new Gson().toJson(authData);
@@ -68,10 +68,8 @@ public class Server {
     }
     private Object loginUser(Request req, Response res) throws ResException {
         var user = new Gson().fromJson(req.body(), UserData.class);
-        var userInMemory = userService.getUser(user);
-        if (!Objects.equals(user.password(), userInMemory.password())) { //check password
-           throw new ResException(401, "Error: unauthorized");
-        }
+        user = userService.getUser(user);
+
         var auth = userService.makeAuth(user.username());
         res.status(200);
         res.body(new Gson().toJson(auth));
@@ -80,56 +78,42 @@ public class Server {
     private Object logoutUser(Request req, Response res) throws ResException {
         String authToken = req.headers("Authorization");
         AuthData auth = userService.getAuth(authToken);
-        if (auth == null) {
-            throw new ResException(401, "Error: unauthorized");
-        } else {
-            userService.deleteAuth(auth);
-            res.status(200);
-            return "";
-        }
+        userService.deleteAuth(auth);
+        res.status(200);
+        return "";
     }
 
     private Object listGames(Request req, Response res) throws ResException {
         String authToken = req.headers("Authorization");
-        AuthData auth = userService.getAuth(authToken);
-        if(auth == null) {
-            throw new ResException(401, "Error: unauthorized");
-        } else {
-            var games = new ListGamesResult(gameService.getAllGames());
-            res.status(200);
-            return new Gson().toJson(games);
-        }
+        userService.getAuth(authToken);
+        var games = new ListGamesResult(gameService.getAllGames());
+        res.status(200);
+        return new Gson().toJson(games);
     }
     private Object createGame(Request req, Response res) throws ResException {
         String authToken = req.headers("Authorization");
-        AuthData auth = userService.getAuth(authToken);
-        if(auth == null) {
-            throw new ResException(401, "Error: unauthorized");
-        } else {
-            var gameName = new Gson().fromJson(req.body(), CreateChessRequest.class);
-            var game = gameService.makeGame(gameName.gameName());
-            String gameIDString = Integer.toString(game.gameID());
-            var gameRes = new CreateChessResult(gameIDString);
-            res.status(200);
+        userService.getAuth(authToken);
 
-            res.body(new Gson().toJson(gameRes));
-            return res.body();
-        }
+        var gameName = new Gson().fromJson(req.body(), CreateChessRequest.class);
+        var game = gameService.makeGame(gameName.gameName());
+        String gameIDString = Integer.toString(game.gameID());
+        var gameRes = new CreateChessResult(gameIDString);
+        res.status(200);
+
+        res.body(new Gson().toJson(gameRes));
+        return res.body();
+
     }
     private Object joinGame(Request req, Response res) throws ResException {
         AuthData auth = userService.getAuth(req.headers("Authorization"));
-        if (auth == null) {
-            throw new ResException(401, "Error: unauthorized");
-        } else {
-            var gameReq = new Gson().fromJson(req.body(), JoinGameRequest.class);
+        var gameReq = new Gson().fromJson(req.body(), JoinGameRequest.class);
 
-            gameService.joinGame(gameReq, auth.username());
-            res.status(200);
-            return new Gson().toJson(res.body());
-        }
+        gameService.joinGame(gameReq, auth.username());
+        res.status(200);
+        return new Gson().toJson(res.body());
     }
 
-    private Object deleteAll(Request req, Response res) throws ResException {
+    private Object deleteAll(Request req, Response res) {
         userService.clear();
         gameService.clear();
         return "";
