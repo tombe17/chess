@@ -19,6 +19,9 @@ public class GameService {
     public GameData makeGame(String gameName) throws ResException {
         System.out.println("in GS - addGame");
         try {
+            if (gameName == null || gameName.isEmpty()) {
+                throw new ResException(400, "Error: bad request");
+            }
             return gameAccess.insertGame(gameName);
         } catch(DataAccessException e) {
             throw new ResException(500, e.getMessage());
