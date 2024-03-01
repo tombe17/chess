@@ -2,6 +2,10 @@ package server;
 
 import com.google.gson.Gson;
 import dataAccess.*;
+import dataAccess.memory.MemoryAuthAccess;
+import dataAccess.memory.MemoryGameAccess;
+import dataAccess.memory.MemoryUserAccess;
+import dataAccess.mysql.MySqlUserAccess;
 import exception.ResException;
 import model.*;
 import services.GameService;
@@ -10,18 +14,18 @@ import services.UserService;
 import spark.Request;
 import spark.Response;
 import spark.Spark;
-import java.util.Objects;
+
+import java.sql.SQLException;
 
 public class Server {
 
     private final UserService userService;
     private final GameService gameService;
 
-    public Server() {
-        final UserDAO userAccess = new MemoryUserAccess();
+    public Server(UserDAO UserDataAccess) {
         final AuthDAO authAccess = new MemoryAuthAccess();
         final GameDAO gameAccess = new MemoryGameAccess();
-        userService = new UserService(userAccess, authAccess);
+        userService = new UserService(UserDataAccess, authAccess);
         gameService = new GameService(gameAccess);
     }
     public int run(int desiredPort) {

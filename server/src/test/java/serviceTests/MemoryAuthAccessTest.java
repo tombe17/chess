@@ -1,7 +1,7 @@
 package serviceTests;
 
 import dataAccess.DataAccessException;
-import dataAccess.MemoryAuthAccess;
+import dataAccess.memory.MemoryAuthAccess;
 import model.AuthData;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

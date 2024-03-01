@@ -1,6 +1,6 @@
 package serviceTests;
 
-import dataAccess.MemoryGameAccess;
+import dataAccess.memory.MemoryGameAccess;
 import exception.ResException;
 import model.GameData;
 import model.JoinGameRequest;

@@ -1,7 +1,7 @@
 package serviceTests;
 
-import dataAccess.MemoryAuthAccess;
-import dataAccess.MemoryUserAccess;
+import dataAccess.memory.MemoryAuthAccess;
+import dataAccess.memory.MemoryUserAccess;
 import exception.ResException;
 import model.AuthData;
 import model.UserData;

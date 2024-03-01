@@ -1,15 +1,12 @@
 package serviceTests;
 
 import dataAccess.DataAccessException;
-import dataAccess.MemoryGameAccess;
+import dataAccess.memory.MemoryGameAccess;
 import model.GameData;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 

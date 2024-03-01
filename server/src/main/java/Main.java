@@ -1,4 +1,5 @@
 import chess.*;
+import dataAccess.mysql.MySqlUserAccess;
 import server.Server;
 
 public class Main {
@@ -13,7 +14,7 @@ public class Main {
                 port = 8080;
             }
 
-            var server = new Server().run(port);
+            var server = new Server(new MySqlUserAccess()).run(port);
             System.out.printf("Listening on port %d%n", port);
         } catch (Throwable ex) {
             System.out.printf("Can't start server: %s%n", ex.getMessage());
