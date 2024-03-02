@@ -16,8 +16,10 @@ public class MySqlUserAccess implements UserDAO {
         configureDatabase();
     }
     @Override
-    public UserData insertUser(UserData user) throws DataAccessException {
-        return null;
+    public UserData insertUser(UserData user) throws ResException {
+        var statement = "INSERT into user (username, password, email) VALUES (?, ?, ?)";
+        executeUpdate(statement, user.username(), user.password(), user.email());
+        return new UserData(user.username(), user.password(), user.email());
     }
 
     @Override
