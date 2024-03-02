@@ -26,8 +26,9 @@ public class MySqlUserAccess implements UserDAO {
     }
 
     @Override
-    public void clear() {
-
+    public void clear() throws ResException {
+        var statement = "TRUNCATE user";
+        executeUpdate(statement);
     }
 
     private int executeUpdate(String statement, Object... params) throws ResException {

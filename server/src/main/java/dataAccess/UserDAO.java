@@ -1,9 +1,10 @@
 package dataAccess;
 
+import exception.ResException;
 import model.UserData;
 
 public interface UserDAO {
     UserData insertUser(UserData user) throws DataAccessException; //PUT a user into db
     UserData getUser(String username) throws DataAccessException; //GET a user from db
-    void clear(); //delete all data
+    void clear() throws ResException; //delete all data
 }

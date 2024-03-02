@@ -117,7 +117,7 @@ public class Server {
         return new Gson().toJson(res.body());
     }
 
-    private Object deleteAll(Request req, Response res) {
+    private Object deleteAll(Request req, Response res) throws ResException {
         userService.clear();
         gameService.clear();
         return "";
