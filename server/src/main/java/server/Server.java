@@ -88,8 +88,8 @@ public class Server {
     private Object loginUser(Request req, Response res) throws ResException {
         var user = new Gson().fromJson(req.body(), UserData.class);
         user = userService.getUser(user);
+        AuthData auth = userService.makeAuth(user.username());
 
-        var auth = userService.makeAuth(user.username());
         res.status(200);
         res.body(new Gson().toJson(auth));
         return res.body();
