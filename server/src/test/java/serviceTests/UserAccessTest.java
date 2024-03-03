@@ -1,18 +1,16 @@
 package serviceTests;
 
-import dataAccess.DataAccessException;
 import dataAccess.UserDAO;
 import dataAccess.memory.MemoryUserAccess;
 import dataAccess.mysql.MySqlUserAccess;
 import model.UserData;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class MemoryUserAccessTest {
+class UserAccessTest {
 
     private static UserData testData;
     @BeforeAll

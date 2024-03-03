@@ -99,7 +99,7 @@ public class Server {
         AuthData auth = userService.getAuth(authToken);
         userService.deleteAuth(auth);
         res.status(200);
-        return "";
+        return res.status();
     }
 
     private Object listGames(Request req, Response res) throws ResException {
@@ -135,7 +135,8 @@ public class Server {
     private Object deleteAll(Request req, Response res) throws ResException {
         userService.clear();
         gameService.clear();
-        return "";
+        res.status(200);
+        return res.status();
     }
 
 }
