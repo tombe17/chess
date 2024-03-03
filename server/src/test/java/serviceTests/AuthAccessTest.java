@@ -1,15 +1,10 @@
 package serviceTests;
 
 import dataAccess.AuthDAO;
-import dataAccess.DataAccessException;
-import dataAccess.UserDAO;
 import dataAccess.memory.MemoryAuthAccess;
-import dataAccess.memory.MemoryUserAccess;
 import dataAccess.mysql.MySqlAuthAccess;
-import dataAccess.mysql.MySqlUserAccess;
 import model.AuthData;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 

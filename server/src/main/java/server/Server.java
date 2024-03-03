@@ -6,6 +6,7 @@ import dataAccess.memory.MemoryAuthAccess;
 import dataAccess.memory.MemoryGameAccess;
 import dataAccess.memory.MemoryUserAccess;
 import dataAccess.mysql.MySqlAuthAccess;
+import dataAccess.mysql.MySqlGameAccess;
 import dataAccess.mysql.MySqlUserAccess;
 import exception.ResException;
 import model.*;
@@ -25,10 +26,11 @@ public class Server {
 
     public Server() {
 
-        final GameDAO gameAccess = new MemoryGameAccess();
+
 
         UserDAO userDataAccess;
         AuthDAO authDataAccess;
+        GameDAO gameDataAccess;
         try {
             userDataAccess = new MySqlUserAccess();
         } catch (SQLException | ResException | DataAccessException e) {
@@ -39,9 +41,14 @@ public class Server {
         } catch (ResException e) {
             authDataAccess = new MemoryAuthAccess();
         }
+        try {
+            gameDataAccess = new MySqlGameAccess();
+        } catch (SQLException | ResException | DataAccessException e) {
+            gameDataAccess = new MemoryGameAccess();
+        }
 
         userService = new UserService(userDataAccess, authDataAccess);
-        gameService = new GameService(gameAccess);
+        gameService = new GameService(gameDataAccess);
     }
     public int run(int desiredPort) {
         Spark.port(desiredPort);
