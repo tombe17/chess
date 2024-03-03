@@ -5,11 +5,11 @@ import com.google.gson.Gson;
 import dataAccess.DataAccessException;
 import dataAccess.GameDAO;
 import exception.ResException;
-import model.AuthData;
 import model.GameData;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
 
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
@@ -53,8 +53,21 @@ public class MySqlGameAccess implements GameDAO {
     }
 
     @Override
-    public Collection<GameData> getAllGames() throws DataAccessException {
-        return null;
+    public Collection<GameData> getAllGames() throws ResException {
+        var result = new ArrayList<GameData>();
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT * FROM game";
+            try (var ps = conn.prepareStatement(statement)) {
+                try (var rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        result.add(readGame(rs));
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new ResException(500, String.format("Unable to read data: %s", e.getMessage()));
+        }
+        return result;
     }
 
     @Override
