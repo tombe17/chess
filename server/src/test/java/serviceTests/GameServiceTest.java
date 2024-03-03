@@ -30,7 +30,7 @@ class GameServiceTest {
     }
 
     @BeforeEach
-    void before() {
+    void before() throws ResException {
         service.clear();
     }
 
