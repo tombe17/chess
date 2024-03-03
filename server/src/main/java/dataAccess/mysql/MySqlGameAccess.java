@@ -1,10 +1,14 @@
 package dataAccess.mysql;
 
+import chess.ChessGame;
+import com.google.gson.Gson;
 import dataAccess.DataAccessException;
 import dataAccess.GameDAO;
 import exception.ResException;
+import model.AuthData;
 import model.GameData;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 
@@ -17,12 +21,29 @@ public class MySqlGameAccess implements GameDAO {
         configureDatabase();
     }
     @Override
-    public GameData insertGame(String gameName) throws DataAccessException {
-        return null;
+    public GameData insertGame(String gameName) throws ResException {
+        var statement = "INSERT into game (gameName, game) VALUES (?, ?)";
+        var gameJson = new Gson().toJson(new ChessGame());
+        var id = executeUpdate(statement, gameName, gameJson);
+        var game = new Gson().fromJson(gameJson, ChessGame.class);
+        return new GameData(id, null, null, gameName, game);
     }
 
     @Override
-    public GameData getGame(int gameID) throws DataAccessException {
+    public GameData getGame(int gameID) throws ResException {
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT * FROM game WHERE gameID=?";
+            try (var ps = conn.prepareStatement(statement)) {
+                ps.setInt(1, gameID);
+                try (var rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        return readGame(rs);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new ResException(500, String.format("Unable to read data: %s", e.getMessage()));
+        }
         return null;
     }
 
@@ -37,8 +58,19 @@ public class MySqlGameAccess implements GameDAO {
     }
 
     @Override
-    public void clear() {
+    public void clear() throws ResException {
+        var statement = "TRUNCATE game";
+        executeUpdate(statement);
+    }
 
+    private GameData readGame(ResultSet rs) throws SQLException {
+        var gameID = rs.getInt("gameID");
+        var whiteUsername = rs.getString("whiteUsername");
+        var blackUsername = rs.getString("blackUsername");
+        var gameName = rs.getString("gameName");
+        var gameString = rs.getString("game");
+        var game = new Gson().fromJson(gameString, ChessGame.class);
+        return new GameData(gameID, whiteUsername, blackUsername, gameName, game);
     }
 
     private int executeUpdate(String statement, Object... params) throws ResException {
