@@ -4,7 +4,9 @@ import dataAccess.DataAccessException;
 import dataAccess.UserDAO;
 import exception.ResException;
 import model.UserData;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
@@ -18,12 +20,26 @@ public class MySqlUserAccess implements UserDAO {
     @Override
     public UserData insertUser(UserData user) throws ResException {
         var statement = "INSERT into user (username, password, email) VALUES (?, ?, ?)";
-        executeUpdate(statement, user.username(), user.password(), user.email());
-        return new UserData(user.username(), user.password(), user.email());
+        var hashedPass = hashPassword(user.password());
+        executeUpdate(statement, user.username(), hashedPass, user.email());
+        return new UserData(user.username(), hashedPass, user.email());
     }
 
     @Override
-    public UserData getUser(String username) throws DataAccessException {
+    public UserData getUser(String username) throws ResException {
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT username, password, email FROM user WHERE username=?";
+            try (var ps = conn.prepareStatement(statement)) {
+                ps.setString(1, username);
+                try (var rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        return readUser(rs);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new ResException(500, String.format("Unable to read data: %s", e.getMessage()));
+        }
         return null;
     }
 
@@ -31,6 +47,26 @@ public class MySqlUserAccess implements UserDAO {
     public void clear() throws ResException {
         var statement = "TRUNCATE user";
         executeUpdate(statement);
+    }
+
+    private UserData readUser(ResultSet rs) throws SQLException {
+        var username = rs.getString("username");
+        var pass = rs.getString("password");
+        var email = rs.getString("email");
+        return new UserData(username, pass, email);
+    }
+
+    String hashPassword(String password) {
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+
+        return encoder.encode(password);
+    }
+
+    public boolean verifyUser(String username, String providedPassword) throws ResException {
+        var hashedPassword = getUser(username).password();
+
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        return encoder.matches(providedPassword, hashedPassword);
     }
 
     private int executeUpdate(String statement, Object... params) throws ResException {

@@ -3,11 +3,13 @@ package services;
 import dataAccess.AuthDAO;
 import dataAccess.DataAccessException;
 import dataAccess.UserDAO;
+import dataAccess.mysql.MySqlUserAccess;
 import exception.ResException;
 import model.AuthData;
 import model.UserData;
 import org.junit.jupiter.api.function.Executable;
 
+import java.sql.SQLException;
 import java.util.Objects;
 
 public class UserService {
@@ -22,13 +24,12 @@ public class UserService {
     public UserData getUser(UserData user) throws ResException {
         System.out.println("In US - getting user");
         try {
-            UserData userInMemory = userAccess.getUser(user.username());
-            if (userInMemory == null || !Objects.equals(user.password(), userInMemory.password())) {
+            if (!((MySqlUserAccess) userAccess).verifyUser(user.username(), user.password())) {
                 throw new ResException(401, "Error: Unauthorized");
             } else {
-                return userInMemory;
+                return userAccess.getUser(user.username());
             }
-        } catch (DataAccessException e) {
+        } catch (DataAccessException | SQLException e) {
             throw new ResException(500, e.getMessage());
         }
 
@@ -50,7 +51,7 @@ public class UserService {
                 throw new ResException(403, "Error: already taken");
             }
 
-        } catch (DataAccessException e) {
+        } catch (DataAccessException | SQLException e) {
             throw new ResException(500, e.getMessage());
         }
     }

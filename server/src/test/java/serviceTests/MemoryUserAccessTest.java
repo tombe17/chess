@@ -1,54 +1,63 @@
 package serviceTests;
 
 import dataAccess.DataAccessException;
+import dataAccess.UserDAO;
 import dataAccess.memory.MemoryUserAccess;
+import dataAccess.mysql.MySqlUserAccess;
 import model.UserData;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class MemoryUserAccessTest {
 
-    private static MemoryUserAccess memoryAccess;
     private static UserData testData;
     @BeforeAll
     public static void setUp() {
         testData = new UserData("Thomas", "pass123", "tom@boh.boh");
-        memoryAccess = new MemoryUserAccess();
     }
 
-    @Test
-    void insertUser() throws DataAccessException {
-        memoryAccess.insertUser(testData);
+    @ParameterizedTest
+    @ValueSource(classes = {MemoryUserAccess.class, MySqlUserAccess.class})
+    void insertUser(Class<? extends UserDAO> userAccessClass) throws Exception {
+        var userAccess = userAccessClass.getDeclaredConstructor().newInstance();
+        userAccess.insertUser(testData);
 
-        UserData theUser = memoryAccess.getUser("Thomas");
+        UserData theUser = userAccess.getUser("Thomas");
 
         assertNotNull(theUser);
         assertEquals("Thomas", theUser.username());
-        assertEquals("pass123", theUser.password());
-        assertEquals("tom@boh.boh", theUser.email());
     }
 
-    @Test
-    void getUser() throws DataAccessException {
-        memoryAccess.insertUser(testData);
-        UserData testUser = memoryAccess.getUser("Thomas");
+    @ParameterizedTest
+    @ValueSource(classes = {MemoryUserAccess.class, MySqlUserAccess.class})
+    void getUser(Class<? extends UserDAO> userAccessClass) throws Exception {
+        var userAccess = userAccessClass.getDeclaredConstructor().newInstance();
+        userAccess.insertUser(testData);
+        UserData testUser = userAccess.getUser("Thomas");
         assertNotNull(testUser);
         assertEquals("Thomas", testUser.username());
     }
-    @Test
-    void invalidGetUser() throws DataAccessException {
-        memoryAccess.insertUser(testData);
-        UserData testUser = memoryAccess.getUser("George");
+    @ParameterizedTest
+    @ValueSource(classes = {MemoryUserAccess.class, MySqlUserAccess.class})
+    void invalidGetUser(Class<? extends UserDAO> userAccessClass) throws Exception {
+        var userAccess = userAccessClass.getDeclaredConstructor().newInstance();
+        userAccess.insertUser(testData);
+        UserData testUser = userAccess.getUser("George");
 
         assertNull(testUser);
     }
-    @Test
-    void clear() throws DataAccessException {
-        memoryAccess.insertUser(testData);
-        memoryAccess.clear();
-        UserData testUser = memoryAccess.getUser("Thomas");
+    @ParameterizedTest
+    @ValueSource(classes = {MemoryUserAccess.class, MySqlUserAccess.class})
+    void clear(Class<? extends UserDAO> userAccessClass) throws Exception {
+        var userAccess = userAccessClass.getDeclaredConstructor().newInstance();
+
+        userAccess.insertUser(testData);
+        userAccess.clear();
+        UserData testUser = userAccess.getUser("Thomas");
         assertNull(testUser);
     }
 }

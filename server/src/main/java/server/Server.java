@@ -5,6 +5,7 @@ import dataAccess.*;
 import dataAccess.memory.MemoryAuthAccess;
 import dataAccess.memory.MemoryGameAccess;
 import dataAccess.memory.MemoryUserAccess;
+import dataAccess.mysql.MySqlAuthAccess;
 import dataAccess.mysql.MySqlUserAccess;
 import exception.ResException;
 import model.*;
@@ -22,10 +23,24 @@ public class Server {
     private final UserService userService;
     private final GameService gameService;
 
-    public Server(UserDAO UserDataAccess) {
-        final AuthDAO authAccess = new MemoryAuthAccess();
+    public Server() {
+
         final GameDAO gameAccess = new MemoryGameAccess();
-        userService = new UserService(UserDataAccess, authAccess);
+
+        UserDAO userDataAccess;
+        AuthDAO authDataAccess;
+        try {
+            userDataAccess = new MySqlUserAccess();
+        } catch (SQLException | ResException | DataAccessException e) {
+            userDataAccess = new MemoryUserAccess();
+        }
+        try {
+            authDataAccess = new MySqlAuthAccess();
+        } catch (ResException e) {
+            authDataAccess = new MemoryAuthAccess();
+        }
+
+        userService = new UserService(userDataAccess, authDataAccess);
         gameService = new GameService(gameAccess);
     }
     public int run(int desiredPort) {

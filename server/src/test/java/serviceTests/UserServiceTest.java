@@ -29,7 +29,7 @@ class UserServiceTest {
     }
 
     @BeforeEach
-    void before() {
+    void before() throws ResException {
         services.clear();
     }
 
