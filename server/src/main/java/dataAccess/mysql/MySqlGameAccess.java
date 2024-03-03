@@ -11,6 +11,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
 import static java.sql.Types.NULL;
@@ -48,8 +49,24 @@ public class MySqlGameAccess implements GameDAO {
     }
 
     @Override
-    public void updateGame(String playerColor, String username, int gameID) throws DataAccessException {
-
+    public void updateGame(String playerColor, String username, int gameID) throws DataAccessException, ResException {
+        try (var conn = DatabaseManager.getConnection()) {
+            String statement;
+            if (Objects.equals(playerColor, "BLACK")) {
+                statement = "UPDATE game SET blackUsername = ? WHERE gameID =?";
+            } else if (Objects.equals(playerColor, "WHITE")) {
+                statement = "UPDATE game SET whiteUsername = ? WHERE gameID =?";
+            } else {
+                return;
+            }
+            try (var ps = conn.prepareStatement(statement)) {
+                ps.setString(1, username);
+                ps.setInt(2, gameID);
+                ps.executeUpdate();
+            }
+        } catch (Exception e) {
+            throw new ResException(500, String.format("Unable to read data: %s", e.getMessage()));
+        }
     }
 
     @Override
