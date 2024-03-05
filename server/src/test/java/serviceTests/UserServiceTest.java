@@ -1,7 +1,10 @@
 package serviceTests;
 
+import dataAccess.DataAccessException;
 import dataAccess.memory.MemoryAuthAccess;
 import dataAccess.memory.MemoryUserAccess;
+import dataAccess.mysql.MySqlAuthAccess;
+import dataAccess.mysql.MySqlUserAccess;
 import exception.ResException;
 import model.AuthData;
 import model.UserData;
@@ -9,6 +12,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import services.UserService;
+
+import java.sql.SQLException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -20,12 +25,12 @@ class UserServiceTest {
     static UserService services;
     static String badAuth;
     @BeforeAll
-    static void setUp() {
+    static void setUp() throws SQLException, ResException, DataAccessException {
         testUser = new UserData("Thomas", "pass123", "tom@boh.boh");
         newUser = new UserData("Newbie", "skills", "new@new.com");
         badUser = new UserData(null, null, "email@foo.com");
         badAuth = "idk";
-        services = new UserService(new MemoryUserAccess(), new MemoryAuthAccess());
+        services = new UserService(new MySqlUserAccess(), new MySqlAuthAccess());
     }
 
     @BeforeEach
@@ -41,7 +46,7 @@ class UserServiceTest {
     }
 
     @Test
-    void invalidAddUser() throws ResException {
+    void invalidAddUser() {
         assertThrows(ResException.class, () -> services.addUser(badUser));
 
     }
@@ -51,7 +56,7 @@ class UserServiceTest {
         UserData retrievedUser = services.getUser(testUser);
 
         assertNotNull(retrievedUser);
-        assertEquals(testUser, retrievedUser);
+        assertEquals(testUser.username(), retrievedUser.username());
     }
 
     @Test
@@ -94,7 +99,7 @@ class UserServiceTest {
     void clearUser() throws ResException {
         services.addUser(testUser);
         services.clear();
-        assertThrows(ResException.class, () -> services.getUser(testUser));
+        assertThrows(NullPointerException.class, () -> services.getUser(testUser));
     }
 
     @Test

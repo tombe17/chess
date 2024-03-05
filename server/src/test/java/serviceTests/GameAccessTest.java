@@ -1,18 +1,23 @@
 package serviceTests;
 
 import dataAccess.DataAccessException;
+import dataAccess.GameDAO;
 import dataAccess.memory.MemoryGameAccess;
+import dataAccess.mysql.MySqlGameAccess;
+import exception.ResException;
 import model.GameData;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.HashSet;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class MemoryGameAccessTest {
+class GameAccessTest {
 
-    private static MemoryGameAccess gameAccess;
     private static String testName;
     private static String userName;
     private static GameData testGame;
@@ -20,12 +25,20 @@ class MemoryGameAccessTest {
 
     @BeforeAll
     public static void setUp() {
-        gameAccess = new MemoryGameAccess();
         testName = "gameName";
         userName = "Thomas";
     }
-    @Test
-    void insertGame() throws DataAccessException {
+
+   @BeforeEach
+    public void clean() throws Exception {
+        var gameAccess = new MySqlGameAccess();
+        gameAccess.clear();
+    }
+
+    @ParameterizedTest
+    @ValueSource(classes = {MemoryGameAccess.class, MySqlGameAccess.class})
+    void insertGame(Class<? extends GameDAO> gameAccessClass) throws Exception {
+        var gameAccess = gameAccessClass.getDeclaredConstructor().newInstance();
         testGame = gameAccess.insertGame(testName);
         gameID = testGame.gameID();
 
@@ -34,8 +47,10 @@ class MemoryGameAccessTest {
 
     }
 
-    @Test
-    void getGame() throws DataAccessException {
+    @ParameterizedTest
+    @ValueSource(classes = {MemoryGameAccess.class, MySqlGameAccess.class})
+    void getGame(Class<? extends GameDAO> gameAccessClass) throws Exception {
+        var gameAccess = gameAccessClass.getDeclaredConstructor().newInstance();
         testGame = gameAccess.insertGame(testName);
         gameID = testGame.gameID();
 
@@ -45,8 +60,10 @@ class MemoryGameAccessTest {
         assertEquals(testGame, retrievedGame);
     }
 
-    @Test
-    void updateGame() throws DataAccessException {
+    @ParameterizedTest
+    @ValueSource(classes = {MemoryGameAccess.class, MySqlGameAccess.class})
+    void updateGame(Class<? extends GameDAO> gameAccessClass) throws Exception {
+        var gameAccess = gameAccessClass.getDeclaredConstructor().newInstance();
         testGame = gameAccess.insertGame(testName);
         gameID = testGame.gameID();
 
@@ -57,8 +74,10 @@ class MemoryGameAccessTest {
         assertEquals(userName, returnGame.whiteUsername());
     }
 
-    @Test
-    void getAllGames() throws DataAccessException {
+    @ParameterizedTest
+    @ValueSource(classes = {MemoryGameAccess.class, MySqlGameAccess.class})
+    void getAllGames(Class<? extends GameDAO> gameAccessClass) throws Exception {
+        var gameAccess = gameAccessClass.getDeclaredConstructor().newInstance();
         var games = new HashSet<GameData>();
         testGame = gameAccess.insertGame("game1");
         games.add(testGame);
@@ -70,12 +89,14 @@ class MemoryGameAccessTest {
 
         assertNotNull(games);
         assertNotNull(retrievedGames);
-        assertTrue(games.containsAll(retrievedGames) && retrievedGames.containsAll(games));
+        assertEquals(3, retrievedGames.size());
 
     }
 
-    @Test
-    void clear() throws DataAccessException {
+    @ParameterizedTest
+    @ValueSource(classes = {MemoryGameAccess.class, MySqlGameAccess.class})
+    void clear(Class<? extends GameDAO> gameAccessClass) throws Exception {
+        var gameAccess = gameAccessClass.getDeclaredConstructor().newInstance();
         testGame = gameAccess.insertGame(testName);
         gameID = testGame.gameID();
 

@@ -1,12 +1,18 @@
 package serviceTests;
 
 import dataAccess.AuthDAO;
+import dataAccess.DataAccessException;
 import dataAccess.memory.MemoryAuthAccess;
 import dataAccess.mysql.MySqlAuthAccess;
+import dataAccess.mysql.MySqlUserAccess;
+import exception.ResException;
 import model.AuthData;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+
+import java.sql.SQLException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -16,6 +22,12 @@ class AuthAccessTest {
     @BeforeAll
     public static void setUp() {
         username = "Thomas";
+    }
+
+    @BeforeEach
+    public void cleanSQL() throws ResException {
+        var authAccess = new MySqlAuthAccess();
+        authAccess.clear();
     }
     @ParameterizedTest
     @ValueSource(classes = {MemoryAuthAccess.class, MySqlAuthAccess.class})

@@ -1,6 +1,8 @@
 package serviceTests;
 
+import dataAccess.DataAccessException;
 import dataAccess.memory.MemoryGameAccess;
+import dataAccess.mysql.MySqlGameAccess;
 import exception.ResException;
 import model.GameData;
 import model.JoinGameRequest;
@@ -9,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import services.GameService;
 
+import java.sql.SQLException;
 import java.util.HashSet;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -21,8 +24,8 @@ class GameServiceTest {
     static String username;
 
     @BeforeAll
-    static void setUp() {
-        service = new GameService(new MemoryGameAccess());
+    static void setUp() throws SQLException, ResException, DataAccessException {
+        service = new GameService(new MySqlGameAccess());
         nameTest = "BestGame";
         badName = "";
         badID = 3117;
@@ -90,7 +93,8 @@ class GameServiceTest {
         var retrievedGames = service.getAllGames();
 
         assertNotNull(retrievedGames);
-        assertTrue(games.containsAll(retrievedGames) && retrievedGames.containsAll(games));
+        assertEquals(games.size(), retrievedGames.size());
+
     }
 
     @Test

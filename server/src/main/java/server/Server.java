@@ -25,12 +25,10 @@ public class Server {
     private final GameService gameService;
 
     public Server() {
-
-
-
         UserDAO userDataAccess;
         AuthDAO authDataAccess;
         GameDAO gameDataAccess;
+
         try {
             userDataAccess = new MySqlUserAccess();
         } catch (SQLException | ResException | DataAccessException e) {

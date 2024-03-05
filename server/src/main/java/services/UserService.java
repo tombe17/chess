@@ -24,7 +24,9 @@ public class UserService {
     public UserData getUser(UserData user) throws ResException {
         System.out.println("In US - getting user");
         try {
-            if (!((MySqlUserAccess) userAccess).verifyUser(user.username(), user.password())) {
+            if (user.username() == null || user.password() == null || user.email() == null) {
+                throw new ResException(400, "Error: bad request");
+            } else if (!((MySqlUserAccess) userAccess).verifyUser(user.username(), user.password())) {
                 throw new ResException(401, "Error: Unauthorized");
             } else {
                 return userAccess.getUser(user.username());
