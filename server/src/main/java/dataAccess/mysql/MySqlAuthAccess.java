@@ -2,6 +2,7 @@ package dataAccess.mysql;
 
 import dataAccess.AuthDAO;
 import dataAccess.DataAccessException;
+import dataAccess.DatabaseManager;
 import exception.ResException;
 import model.AuthData;
 
@@ -103,7 +104,7 @@ public class MySqlAuthAccess implements AuthDAO {
             """
     };
 
-    private void configureDatabase() throws ResException, DataAccessException, SQLException {
+    public void configureDatabase() throws ResException, DataAccessException, SQLException {
         DatabaseManager.createDatabase();
         try (var conn = DatabaseManager.getConnection()) {
             for (var statement : createStatements) {

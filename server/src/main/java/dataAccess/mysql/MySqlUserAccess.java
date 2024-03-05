@@ -1,6 +1,7 @@
 package dataAccess.mysql;
 
 import dataAccess.DataAccessException;
+import dataAccess.DatabaseManager;
 import dataAccess.UserDAO;
 import exception.ResException;
 import model.UserData;
