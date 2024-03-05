@@ -1,5 +1,6 @@
 package dataAccess.mysql;
 
+import chess.ChessBoard;
 import chess.ChessGame;
 import com.google.gson.Gson;
 import dataAccess.DataAccessException;
@@ -24,7 +25,12 @@ public class MySqlGameAccess implements GameDAO {
     @Override
     public GameData insertGame(String gameName) throws ResException {
         var statement = "INSERT into game (gameName, game) VALUES (?, ?)";
-        var gameJson = new Gson().toJson(new ChessGame());
+        var board = new ChessBoard();
+        board.resetBoard();
+        var chessGame = new ChessGame();
+        chessGame.setBoard(board);
+        var gameJson = new Gson().toJson(chessGame);
+
         var id = executeUpdate(statement, gameName, gameJson);
         var game = new Gson().fromJson(gameJson, ChessGame.class);
         return new GameData(id, null, null, gameName, game);
