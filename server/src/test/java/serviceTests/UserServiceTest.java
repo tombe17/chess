@@ -99,7 +99,7 @@ class UserServiceTest {
     void clearUser() throws ResException {
         services.addUser(testUser);
         services.clear();
-        assertThrows(NullPointerException.class, () -> services.getUser(testUser));
+        assertThrows(ResException.class, () -> services.getUser(testUser));
     }
 
     @Test

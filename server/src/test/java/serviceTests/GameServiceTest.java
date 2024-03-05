@@ -71,6 +71,9 @@ class GameServiceTest {
         GameData gameTest = service.makeGame(nameTest);
 
         service.joinGame(new JoinGameRequest("WHITE", gameTest.gameID()), username);
+        GameData retrievedGame = service.getGame(gameTest.gameID());
+
+        assertEquals(username, retrievedGame.whiteUsername());
     }
 
     @Test
