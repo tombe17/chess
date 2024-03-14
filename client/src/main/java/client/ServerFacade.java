@@ -30,9 +30,11 @@ public class ServerFacade {
         return auth;
     }
 
-    public UserData loginUser(UserData user) throws ResException {
+    public AuthData loginUser(UserData user) throws ResException {
         var path = "/session";
-        return user;
+        var auth = this.makeRequest("POST", path, user, AuthData.class);
+        authToken = auth.authToken();
+        return auth;
     }
 
     private <T> T makeRequest(String method, String path, Object req, Class<T> resClass) throws ResException {

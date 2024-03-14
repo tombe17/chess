@@ -47,7 +47,7 @@ public class EvalClient {
     public String login(String[] params) throws ResException {
         if (params.length == 2) {
             var user = new UserData(params[0], params[1], null);
-            server.loginUser(user);
+            AuthData auth = server.loginUser(user);
             state = State.SIGNEDIN;
             return "Welcome back " + user.username() + "!";
         }
