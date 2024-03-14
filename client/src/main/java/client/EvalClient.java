@@ -35,43 +35,52 @@ public class EvalClient {
     }
 
     public String register(String... params) throws ResException {
-        if (params.length == 3) {
-            var user = new UserData(params[0], params[1], params[2]);
-            AuthData auth = server.registerUser(user);
-            state = State.SIGNEDIN;
-            return "Welcome " + user.username() + "!";
+        if (state.equals(State.SIGNEDOUT)) {
+            if (params.length == 3) {
+                var user = new UserData(params[0], params[1], params[2]);
+                AuthData auth = server.registerUser(user);
+                state = State.SIGNEDIN;
+                return "Welcome " + user.username() + "!";
+            }
         }
         return "failed to register";
     }
 
     public String login(String[] params) throws ResException {
-        if (params.length == 2) {
-            var user = new UserData(params[0], params[1], null);
-            AuthData auth = server.loginUser(user);
-            state = State.SIGNEDIN;
-            return "Welcome back " + user.username() + "!";
+        if (state.equals(State.SIGNEDOUT)) {
+            if (params.length == 2) {
+                var user = new UserData(params[0], params[1], null);
+                AuthData auth = server.loginUser(user);
+                state = State.SIGNEDIN;
+                return "Welcome back " + user.username() + "!";
+            }
         }
         return "Failed to login";
     }
 
-    public String create(String[] params) {
+    public String create(String[] params) throws ResException {
+        assertSignedIn();
         return "In create";
     }
 
-    public String list() {
+    public String list() throws ResException {
+        assertSignedIn();
         return "In list";
     }
 
-    public String join(String[] params) {
+    public String join(String[] params) throws ResException {
+        assertSignedIn();
         return "In join";
     }
 
-    public String observe(String[] params) {
+    public String observe(String[] params) throws ResException {
+        assertSignedIn();
         return "In observe";
     }
 
     public String logout() throws ResException {
         assertSignedIn();
+        server.logoutUser();
         state = State.SIGNEDOUT;
         return "logged out. Play again soon!";
     }

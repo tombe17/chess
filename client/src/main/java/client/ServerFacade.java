@@ -37,11 +37,20 @@ public class ServerFacade {
         return auth;
     }
 
+    public void logoutUser() throws ResException {
+        var path = "/session";
+        this.makeRequest("DELETE", path, null, null);
+        System.out.print(authToken);
+        authToken = null;
+        System.out.print(authToken);
+    }
+
     private <T> T makeRequest(String method, String path, Object req, Class<T> resClass) throws ResException {
         try {
             URL url = (new URI(serverUrl + path)).toURL();
             HttpURLConnection http = (HttpURLConnection) url.openConnection();
             http.setRequestMethod(method);
+            http.setRequestProperty("Authorization", authToken);
             if (!method.equals("DELETE")) {
                 http.setDoOutput(true);
             }
