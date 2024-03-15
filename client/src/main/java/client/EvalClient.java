@@ -2,10 +2,12 @@ package client;
 
 import exception.ResException;
 import model.AuthData;
+import model.GameData;
 import model.UserData;
 import ui.EscapeSequences;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Objects;
 
 public class EvalClient {
@@ -71,7 +73,16 @@ public class EvalClient {
     public String list() throws ResException {
         assertSignedIn();
         var games = server.listGames();
-        return "In list";
+        StringBuilder printGames = new StringBuilder();
+        int i = 1;
+        String num;
+        for (GameData game : games) {
+            num = Integer.toString(i);
+            printGames.append(num).append(". ").append(game.gameName()).append(" [").append(game.whiteUsername()).append(", ").
+                    append(game.blackUsername()).append("]\n");
+            i++;
+        }
+        return printGames.toString();
     }
 
     public String join(String[] params) throws ResException {
