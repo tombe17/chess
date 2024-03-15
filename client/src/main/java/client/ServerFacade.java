@@ -2,8 +2,7 @@ package client;
 
 import com.google.gson.Gson;
 import exception.ResException;
-import model.AuthData;
-import model.UserData;
+import model.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,6 +11,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.util.Collection;
 
 public class ServerFacade {
 
@@ -40,9 +40,20 @@ public class ServerFacade {
     public void logoutUser() throws ResException {
         var path = "/session";
         this.makeRequest("DELETE", path, null, null);
-        System.out.print(authToken);
         authToken = null;
-        System.out.print(authToken);
+    }
+
+    public String createGame(String gameName) throws ResException {
+        var path = "/game";
+        var gameReq = new CreateChessRequest(gameName);
+        var gameRes = this.makeRequest("POST", path, gameReq, CreateChessResult.class);
+        return gameRes.gameID();
+    }
+
+    public Collection<GameData> listGames() throws ResException {
+        var path = "/game";
+        var response = this.makeRequest("GET", path, null, ListGamesResult.class);
+        return response.games();
     }
 
     private <T> T makeRequest(String method, String path, Object req, Class<T> resClass) throws ResException {

@@ -60,11 +60,17 @@ public class EvalClient {
 
     public String create(String[] params) throws ResException {
         assertSignedIn();
-        return "In create";
+        if (params.length == 1) {
+            var name = params[0];
+            var gameID = server.createGame(name);
+            return "Created game: " + name + " with ID: " + gameID;
+        }
+        return "failed to create";
     }
 
     public String list() throws ResException {
         assertSignedIn();
+        var games = server.listGames();
         return "In list";
     }
 
