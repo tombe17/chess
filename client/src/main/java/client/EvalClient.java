@@ -92,28 +92,43 @@ public class EvalClient {
     }
 
     public String join(String[] params) throws ResException {
-        //assertSignedIn();
+        assertSignedIn();
         String teamColor = null;
         if (params.length > 2 || params.length == 0) {
             return "failed to join";
         }
-        if (params.length == 2) {
-            teamColor = params[1].toUpperCase();
-        }
         if (gamesIndex.isEmpty()) {
             return "list games before joining";
         }
+        if (params.length == 2) {
+            teamColor = params[1].toUpperCase();
+        }
+
         var gameToGet = params[0];
         var gameID = gamesIndex.get(gameToGet).gameID();
         server.joinGame(teamColor, gameID);
-        var screen = new PrintBoard();
-        PrintBoard.print();
+
+        var game = gamesIndex.get(gameToGet);
+        var gamePrinter = new PrintBoard(teamColor, game);
+        gamePrinter.print();
         return "In join";
     }
 
     public String observe(String[] params) throws ResException {
         assertSignedIn();
-        return "In observe";
+        if (params.length == 1) {
+            if (gamesIndex.isEmpty()) {
+                return "list games before joining";
+            }
+            var gameToGet = params[0];
+            var gameID = gamesIndex.get(gameToGet).gameID();
+            server.joinGame(null, gameID);
+            var game = gamesIndex.get(gameToGet);
+            var gamePrinter = new PrintBoard("OBSERVER", game);
+            gamePrinter.print();
+            return "";
+        }
+        return "failed to observe";
     }
 
     public String logout() throws ResException {

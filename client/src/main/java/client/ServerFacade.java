@@ -51,7 +51,6 @@ public class ServerFacade {
     }
 
     public void joinGame(String playerColor, int gameID) throws ResException {
-        System.out.print("In Join for Facade");
         var path = "/game";
         var joinReq = new JoinGameRequest(playerColor, gameID);
         this.makeRequest("PUT", path, joinReq, null);
