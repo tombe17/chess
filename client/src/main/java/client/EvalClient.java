@@ -86,7 +86,9 @@ public class EvalClient {
     }
 
     public String join(String[] params) throws ResException {
-        assertSignedIn();
+        //assertSignedIn();
+        var screen = new PrintBoard();
+        PrintBoard.print();
         return "In join";
     }
 
