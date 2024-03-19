@@ -109,7 +109,7 @@ public class EvalClient {
         server.joinGame(teamColor, gameID);
 
         var game = gamesIndex.get(gameToGet);
-        var gamePrinter = new PrintBoard(teamColor, game);
+        var gamePrinter = new PrintBoard(teamColor, game.game());
         gamePrinter.print();
         return "In join";
     }
@@ -124,7 +124,7 @@ public class EvalClient {
             var gameID = gamesIndex.get(gameToGet).gameID();
             server.joinGame(null, gameID);
             var game = gamesIndex.get(gameToGet);
-            var gamePrinter = new PrintBoard("OBSERVER", game);
+            var gamePrinter = new PrintBoard("OBSERVER", game.game());
             gamePrinter.print();
             return "";
         }
