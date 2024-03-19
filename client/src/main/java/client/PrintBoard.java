@@ -126,25 +126,25 @@ public class PrintBoard {
         }
 
         if (forWhite) {
-            for (int boardCol = BOARD_SIZE_IN_SQUARES; boardCol > 0; boardCol--) {
-                if (boardCol % 2 == 0) {
-                    out.print(colorFirst);
-                } else {
-                    out.print(colorSecond);
-                }
-                myPiece = game.getBoard().getPiece(new ChessPosition(rowNum, boardCol));
-                out.print(SPACE);
-                printPiece(out, myPiece);
-                out.print(SPACE);
-            }
-        } else {
             for (int boardCol = 0; boardCol < BOARD_SIZE_IN_SQUARES; boardCol++) {
                 if (boardCol % 2 == 0) {
                     out.print(colorFirst);
                 } else {
                     out.print(colorSecond);
                 }
-                myPiece = game.getBoard().getPiece(new ChessPosition(rowNum + 1, boardCol + 1));
+                myPiece = game.getBoard().getPiece(new ChessPosition(rowNum, boardCol + 1));
+                out.print(SPACE);
+                printPiece(out, myPiece);
+                out.print(SPACE);
+            }
+        } else {
+            for (int boardCol = BOARD_SIZE_IN_SQUARES; boardCol > 0; boardCol--) {
+                if (boardCol % 2 == 0) {
+                    out.print(colorFirst);
+                } else {
+                    out.print(colorSecond);
+                }
+                myPiece = game.getBoard().getPiece(new ChessPosition(rowNum + 1, boardCol));
                 out.print(SPACE);
                 printPiece(out, myPiece);
                 out.print(SPACE);
