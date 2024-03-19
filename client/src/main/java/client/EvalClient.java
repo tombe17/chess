@@ -8,12 +8,15 @@ import ui.EscapeSequences;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Objects;
 
 public class EvalClient {
     private final ServerFacade server;
     private final String serverUrl;
     private State state = State.SIGNEDOUT;
+
+    public HashMap<String, GameData> gamesIndex = new HashMap<>();
     public EvalClient(String serverUrl) {
         this.serverUrl = serverUrl;
         server = new ServerFacade(serverUrl);
@@ -76,8 +79,11 @@ public class EvalClient {
         StringBuilder printGames = new StringBuilder();
         int i = 1;
         String num;
+        gamesIndex.clear();
         for (GameData game : games) {
             num = Integer.toString(i);
+            gamesIndex.put(num, game);
+
             printGames.append(num).append(". ").append(game.gameName()).append(" [").append(game.whiteUsername()).append(", ").
                     append(game.blackUsername()).append("]\n");
             i++;
@@ -87,6 +93,19 @@ public class EvalClient {
 
     public String join(String[] params) throws ResException {
         //assertSignedIn();
+        String teamColor = null;
+        if (params.length > 2 || params.length == 0) {
+            return "failed to join";
+        }
+        if (params.length == 2) {
+            teamColor = params[1].toUpperCase();
+        }
+        if (gamesIndex.isEmpty()) {
+            return "list games before joining";
+        }
+        var gameToGet = params[0];
+        var gameID = gamesIndex.get(gameToGet).gameID();
+        server.joinGame(teamColor, gameID);
         var screen = new PrintBoard();
         PrintBoard.print();
         return "In join";

@@ -50,6 +50,13 @@ public class ServerFacade {
         return gameRes.gameID();
     }
 
+    public void joinGame(String playerColor, int gameID) throws ResException {
+        System.out.print("In Join for Facade");
+        var path = "/game";
+        var joinReq = new JoinGameRequest(playerColor, gameID);
+        this.makeRequest("PUT", path, joinReq, null);
+    }
+
     public Collection<GameData> listGames() throws ResException {
         var path = "/game";
         var response = this.makeRequest("GET", path, null, ListGamesResult.class);
