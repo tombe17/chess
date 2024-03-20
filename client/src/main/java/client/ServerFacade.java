@@ -62,6 +62,11 @@ public class ServerFacade {
         return response.games();
     }
 
+    public void clearAll() throws ResException {
+        var path = "/db";
+        this.makeRequest("DELETE", path, null, null);
+    }
+
     private <T> T makeRequest(String method, String path, Object req, Class<T> resClass) throws ResException {
         try {
             URL url = (new URI(serverUrl + path)).toURL();
@@ -114,4 +119,6 @@ public class ServerFacade {
     private boolean isSuccessful(int status) {
         return status / 100 == 2;
     }
+
+    public String getAuth() {return authToken; }
 }
