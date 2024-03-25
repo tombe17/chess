@@ -14,6 +14,7 @@ public class EvalClient {
     private final ServerFacade server;
     private final String serverUrl;
     private State state = State.SIGNEDOUT;
+    private GameState gameState = GameState.NOTACTIVE;
 
     public HashMap<String, GameData> gamesIndex = new HashMap<>();
     public EvalClient(String serverUrl) {
@@ -32,6 +33,11 @@ public class EvalClient {
             case "list" -> list();
             case "join" -> join(params);
             case "observe" -> observe(params);
+            case "move" -> makeMove(params);
+            case "show" -> showMoves(params);
+            case "redraw" -> redraw();
+            case "resign" -> resign();
+            case "leave" -> leave();
             case "logout" -> logout();
             case "quit" -> "quit";
             default -> help();
@@ -110,7 +116,8 @@ public class EvalClient {
         var game = gamesIndex.get(gameToGet);
         var gamePrinter = new PrintBoard(teamColor, game.game());
         gamePrinter.print();
-        return "In join";
+        gameState = GameState.PLAYING;
+        return "";
     }
 
     public String observe(String[] params) throws ResException {
@@ -125,6 +132,7 @@ public class EvalClient {
             var game = gamesIndex.get(gameToGet);
             var gamePrinter = new PrintBoard("OBSERVER", game.game());
             gamePrinter.print();
+            gameState = GameState.OBSERVING;
             return "";
         }
         return "failed to observe";
@@ -137,7 +145,39 @@ public class EvalClient {
         return "logged out. Play again soon!";
     }
 
+    public String makeMove(String[] params) throws ResException {
+        assertPlaying();
+        if (params.length == 2) {
+            String startPos = params[0];
+            String endPos = params[1];
+
+            return "made move " + startPos + " to " + endPos;
+        }
+        return "failed to move";
+    }
+
+    public String showMoves(String[] params) throws ResException {
+        assertPlaying();
+        return "in show moves";
+    }
+
+    public String resign() throws ResException {
+        assertPlaying();
+        return "in resign";
+    }
+
+    public String redraw() throws ResException {
+        assertInGame();
+        return "in redraw";
+    }
+
+    public String leave() throws ResException {
+        assertInGame();
+        return "in leave";
+    }
+
     public String commandText() {
+
         if (state == State.SIGNEDOUT) {
             return """
                     register <USERNAME> <PASSWORD> <EMAIL> - to create an account
@@ -145,7 +185,23 @@ public class EvalClient {
                     quit - quit chess
                     help - list commands
                     """;
-        } return """
+        } else if (gameState == GameState.OBSERVING) {
+            return """
+                    redraw - the chess board
+                    leave - the game
+                    help - list commands
+                    """;
+        } else if (gameState == GameState.PLAYING) {
+            return """
+                    move <START_POS> <END_POS> - a piece
+                    show <POS> - the moves for a given position
+                    redraw - the chess board
+                    leave - the game
+                    resign - forfeit the game
+                    help - list commands
+                    """;
+        }
+        return """
                 create <NAME> - new game
                 list - all games
                 join <ID> [WHITE|BLACK|<empty>] - a game
@@ -179,6 +235,18 @@ public class EvalClient {
     private void assertSignedIn() throws ResException {
         if (state == State.SIGNEDOUT) {
             throw new ResException(400, "You must sign in");
+        }
+    }
+
+    private void assertInGame() throws ResException {
+        if (gameState == GameState.NOTACTIVE || gameState == GameState.FINISHED) {
+            throw new ResException(400, "Game is not active");
+        }
+    }
+
+    private void assertPlaying() throws ResException {
+        if (gameState != GameState.PLAYING) {
+            throw new ResException(400, "You must be playing for that action");
         }
     }
 
