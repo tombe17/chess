@@ -29,21 +29,12 @@ public class PrintBoard {
     public void print() {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
 
-        if (this.teamColor.equals("WHITE")) {
-            printBlack(out);
-            out.println();
-            printWhite(out);
-        } else if (this.teamColor.equals("BLACK")) {
-            printWhite(out);
-            out.println();
+        if (this.teamColor.equals("BLACK")) {
             printBlack(out);
         } else {
-            printBlack(out);
-            out.println();
             printWhite(out);
         }
-
-        out.println();
+        //out.println();
     }
 
     private void printWhite(PrintStream out) {

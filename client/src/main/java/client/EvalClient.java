@@ -1,5 +1,7 @@
 package client;
 
+import client.websocket.NotificationHandler;
+import client.websocket.WebSocketFacade;
 import exception.ResException;
 import model.AuthData;
 import model.GameData;
@@ -12,9 +14,14 @@ import java.util.Objects;
 
 public class EvalClient {
     private final ServerFacade server;
+    private WebSocketFacade ws;
+    //private final NotificationHandler notificationHandler = new NotificationHandler();
     private final String serverUrl;
     private State state = State.SIGNEDOUT;
     private GameState gameState = GameState.NOTACTIVE;
+
+    private GameData currGame = null;
+    private String currColor = null;
 
     public HashMap<String, GameData> gamesIndex = new HashMap<>();
     public EvalClient(String serverUrl) {
@@ -107,14 +114,23 @@ public class EvalClient {
         }
         if (params.length == 2) {
             teamColor = params[1].toUpperCase();
+
+            if (!teamColor.equals("WHITE") && !teamColor.equals("BLACK")) {
+                throw new ResException(400, "Bad request");
+            }
+        }
+        if (params.length == 1) {
+            return observe(params);
         }
 
         var gameToGet = params[0];
         var gameID = gamesIndex.get(gameToGet).gameID();
         server.joinGame(teamColor, gameID);
+        //ws = new WebSocketFacade(serverUrl, notificationHandler);
 
-        var game = gamesIndex.get(gameToGet);
-        var gamePrinter = new PrintBoard(teamColor, game.game());
+        currGame = gamesIndex.get(gameToGet);
+        currColor = teamColor;
+        var gamePrinter = new PrintBoard(teamColor, currGame.game());
         gamePrinter.print();
         gameState = GameState.PLAYING;
         return "";
@@ -129,8 +145,10 @@ public class EvalClient {
             var gameToGet = params[0];
             var gameID = gamesIndex.get(gameToGet).gameID();
             server.joinGame(null, gameID);
-            var game = gamesIndex.get(gameToGet);
-            var gamePrinter = new PrintBoard("OBSERVER", game.game());
+
+            currGame = gamesIndex.get(gameToGet);
+            currColor = "OBSERVER";
+            var gamePrinter = new PrintBoard("OBSERVER", currGame.game());
             gamePrinter.print();
             gameState = GameState.OBSERVING;
             return "";
@@ -158,21 +176,30 @@ public class EvalClient {
 
     public String showMoves(String[] params) throws ResException {
         assertPlaying();
-        return "in show moves";
+        if (params.length == 1) {
+            String pos = params[0];
+
+            return "Showing moves for " + pos;
+        }
+        return "failed to show moves";
     }
 
     public String resign() throws ResException {
         assertPlaying();
+        gameState = GameState.NOTACTIVE;
         return "in resign";
     }
 
     public String redraw() throws ResException {
         assertInGame();
+        var gamePrinter = new PrintBoard(currColor, currGame.game());
+        gamePrinter.print();
         return "in redraw";
     }
 
     public String leave() throws ResException {
         assertInGame();
+        gameState = GameState.NOTACTIVE;
         return "in leave";
     }
 
