@@ -15,7 +15,7 @@ import java.util.Objects;
 public class EvalClient {
     private final ServerFacade server;
     private WebSocketFacade ws;
-    //private final NotificationHandler notificationHandler = new NotificationHandler();
+    private final NotificationHandler notificationHandler;
     private final String serverUrl;
     private State state = State.SIGNEDOUT;
     private GameState gameState = GameState.NOTACTIVE;
@@ -24,9 +24,10 @@ public class EvalClient {
     private String currColor = null;
 
     public HashMap<String, GameData> gamesIndex = new HashMap<>();
-    public EvalClient(String serverUrl) {
+    public EvalClient(String serverUrl, NotificationHandler notificationHandler) {
         this.serverUrl = serverUrl;
         server = new ServerFacade(serverUrl);
+        this.notificationHandler = notificationHandler;
     }
 
     public String eval(String input) throws ResException {
@@ -55,7 +56,7 @@ public class EvalClient {
         if (state.equals(State.SIGNEDOUT)) {
             if (params.length == 3) {
                 var user = new UserData(params[0], params[1], params[2]);
-                AuthData auth = server.registerUser(user);
+                server.registerUser(user);
                 state = State.SIGNEDIN;
                 return "Welcome " + user.username() + "!";
             }
@@ -67,7 +68,7 @@ public class EvalClient {
         if (state.equals(State.SIGNEDOUT)) {
             if (params.length == 2) {
                 var user = new UserData(params[0], params[1], null);
-                AuthData auth = server.loginUser(user);
+                server.loginUser(user);
                 state = State.SIGNEDIN;
                 return "Welcome back " + user.username() + "!";
             }
@@ -126,7 +127,9 @@ public class EvalClient {
         var gameToGet = params[0];
         var gameID = gamesIndex.get(gameToGet).gameID();
         server.joinGame(teamColor, gameID);
-        //ws = new WebSocketFacade(serverUrl, notificationHandler);
+        ws = new WebSocketFacade(serverUrl, notificationHandler);
+        var auth = server.getAuth();
+        ws.joinGame(auth.username());
 
         currGame = gamesIndex.get(gameToGet);
         currColor = teamColor;

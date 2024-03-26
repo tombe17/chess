@@ -1,12 +1,15 @@
 package client;
+import client.websocket.NotificationHandler;
 import ui.EscapeSequences;
+import webSocketMessages.serverMessages.ServerMessage;
+
 import java.util.Scanner;
 
-public class Repl {
+public class Repl implements NotificationHandler {
 
     private final EvalClient client;
     public Repl(String serverUrl) {
-        client = new EvalClient(serverUrl);
+        client = new EvalClient(serverUrl, this);
     }
 
     public void run() {
@@ -28,10 +31,15 @@ public class Repl {
             }
         }
 
-
     }
 
     private void printPrompt() {
         System.out.print("\n" + EscapeSequences.SET_TEXT_COLOR_WHITE + "[" + client.getState() + "] " + ">>> " + EscapeSequences.SET_TEXT_COLOR_GREEN);
+    }
+
+    @Override
+    public void notify(ServerMessage notification) {
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_YELLOW + notification.toString());
+        printPrompt();
     }
 }

@@ -18,28 +18,34 @@ public class ServerFacade {
     private final String serverUrl;
     private String authToken;
 
+    private AuthData auth;
+
     public ServerFacade(String serverUrl) {
         this.serverUrl = serverUrl;
         authToken = null;
+        auth = null;
     }
 
     public AuthData registerUser(UserData user) throws ResException {
         var path = "/user";
         var auth = this.makeRequest("POST", path, user, AuthData.class);
-        authToken = auth.authToken();
+        this.auth = auth;
+        this.authToken = auth.authToken();
         return auth;
     }
 
     public AuthData loginUser(UserData user) throws ResException {
         var path = "/session";
         var auth = this.makeRequest("POST", path, user, AuthData.class);
-        authToken = auth.authToken();
+        this.auth = auth;
+        this.authToken = auth.authToken();
         return auth;
     }
 
     public void logoutUser() throws ResException {
         var path = "/session";
         this.makeRequest("DELETE", path, null, null);
+        auth = null;
         authToken = null;
     }
 
@@ -120,5 +126,5 @@ public class ServerFacade {
         return status / 100 == 2;
     }
 
-    public String getAuth() {return authToken; }
+    public AuthData getAuth() {return auth; }
 }
