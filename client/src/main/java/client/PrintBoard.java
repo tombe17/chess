@@ -32,9 +32,9 @@ public class PrintBoard {
             if (this.teamColor.equals(ChessGame.TeamColor.BLACK)) {
                 printBlack(out);
             }
+        } else {
+            printWhite(out);
         }
-        printWhite(out);
-        //out.println();
     }
 
     private void printWhite(PrintStream out) {

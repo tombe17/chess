@@ -140,8 +140,8 @@ public class EvalClient {
         var auth = server.getAuth();
         ws.joinGame(auth.authToken(), currGame.gameID(), currColor);
 
-        var gamePrinter = new PrintBoard(currColor, currGame.game());
-        gamePrinter.print();
+        // var gamePrinter = new PrintBoard(currColor, currGame.game());
+        //gamePrinter.print();
         gameState = GameState.PLAYING;
         return "";
     }

@@ -29,7 +29,6 @@ public class WebSocketHandler {
     @OnWebSocketMessage
     public void onMessage(Session session, String message) throws IOException, ResException {
         //figure out which action it is then based on then perform a function
-        System.out.println(message);
         UserGameCommand cmd = new Gson().fromJson(message, UserGameCommand.class);
         switch (cmd.getCommandType()) {
             case JOIN_PLAYER -> joinPlayer(new Gson().fromJson(message, JoinPlayerCom.class), session);
@@ -41,12 +40,13 @@ public class WebSocketHandler {
         connections.add(cmd.getAuthString(), cmd.getGameID(), session);
 
         //broadcast notification
-        var mes = String.format("%s joined as %s", cmd.getAuthString(), cmd.getPlayerColor());
+        var auth = userService.getAuth(cmd.getAuthString());
+        var mes = String.format("%s joined as %s", auth.username(), cmd.getPlayerColor());
         var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, mes);
         connections.broadcast(cmd.getAuthString(), cmd.getGameID(), notification);
 
         //load game for root client
-        var notifyLoad = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameService.getGame(cmd.getGameID()));
+        var notifyLoad = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameService.getGame(cmd.getGameID()), cmd.getPlayerColor());
         session.getRemote().sendString(notifyLoad.toString());
     }
 }

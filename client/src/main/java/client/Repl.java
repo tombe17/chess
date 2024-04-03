@@ -1,6 +1,9 @@
 package client;
 import client.websocket.NotificationHandler;
 import ui.EscapeSequences;
+import webSocketMessages.serverMessages.ErrorMessage;
+import webSocketMessages.serverMessages.LoadGameMessage;
+import webSocketMessages.serverMessages.Notification;
 import webSocketMessages.serverMessages.ServerMessage;
 
 import java.util.Scanner;
@@ -38,8 +41,23 @@ public class Repl implements NotificationHandler {
     }
 
     @Override
-    public void notify(ServerMessage notification) {
-        System.out.println(EscapeSequences.SET_TEXT_COLOR_YELLOW + notification.toString());
+    public void notify(Notification notification) {
+        System.out.println("Printing notification");
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_YELLOW + notification.getMessage());
+        printPrompt();
+    }
+    @Override
+    public void loadGame(LoadGameMessage message) {
+        //get game and then print it
+        System.out.println("Printing game");
+        new PrintBoard(message.getTeamColor(), message.getGame().game()).print();
+
+        printPrompt();
+    }
+    @Override
+    public void error(ErrorMessage error) {
+        System.out.println("Sending error");
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_RED + error.getMessage());
         printPrompt();
     }
 }
