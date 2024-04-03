@@ -11,6 +11,7 @@ import services.UserService;
 import webSocketMessages.serverMessages.LoadGameMessage;
 import webSocketMessages.serverMessages.Notification;
 import webSocketMessages.serverMessages.ServerMessage;
+import webSocketMessages.userCommands.JoinObserverCom;
 import webSocketMessages.userCommands.JoinPlayerCom;
 import webSocketMessages.userCommands.UserGameCommand;
 
@@ -32,6 +33,7 @@ public class WebSocketHandler {
         UserGameCommand cmd = new Gson().fromJson(message, UserGameCommand.class);
         switch (cmd.getCommandType()) {
             case JOIN_PLAYER -> joinPlayer(new Gson().fromJson(message, JoinPlayerCom.class), session);
+            case JOIN_OBSERVER -> joinObserver(new Gson().fromJson(message, JoinObserverCom.class), session);
         }
     }
 
@@ -48,5 +50,18 @@ public class WebSocketHandler {
         //load game for root client
         var notifyLoad = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameService.getGame(cmd.getGameID()), cmd.getPlayerColor());
         session.getRemote().sendString(notifyLoad.toString());
+    }
+
+    private void joinObserver(JoinObserverCom cmd, Session session) throws ResException, IOException {
+        System.out.println("In join Player WS");
+        connections.add(cmd.getAuthString(), cmd.getGameID(), session);
+
+        var notifyLoad = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameService.getGame(cmd.getGameID()), null);
+        session.getRemote().sendString(notifyLoad.toString());
+
+        var auth = userService.getAuth(cmd.getAuthString());
+        var mes = String.format("%s joined as an observer", auth.username());
+        var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, mes);
+        connections.broadcast(cmd.getAuthString(), cmd.getGameID(), notification);
     }
 }

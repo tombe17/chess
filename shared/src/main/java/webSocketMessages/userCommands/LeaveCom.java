@@ -8,4 +8,6 @@ public class LeaveCom extends UserGameCommand {
         this.commandType = CommandType.LEAVE;
         this.gameID = gameID;
     }
+
+    public int getGameID() {return gameID;}
 }

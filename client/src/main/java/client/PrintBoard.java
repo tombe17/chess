@@ -28,9 +28,11 @@ public class PrintBoard {
 
     public void print() {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
-        if (teamColor != null) {
+        if (teamColor != null ) {
             if (this.teamColor.equals(ChessGame.TeamColor.BLACK)) {
                 printBlack(out);
+            } else {
+                printWhite(out);
             }
         } else {
             printWhite(out);

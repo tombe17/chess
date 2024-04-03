@@ -155,11 +155,14 @@ public class EvalClient {
             var gameToGet = params[0];
             var gameID = gamesIndex.get(gameToGet).gameID();
             server.joinGame(null, gameID);
-
             currGame = gamesIndex.get(gameToGet);
             currColor = null;
-            var gamePrinter = new PrintBoard(currColor, currGame.game());
-            gamePrinter.print();
+
+            ws = new WebSocketFacade(serverUrl, notificationHandler);
+            var auth = server.getAuth();
+            ws.observeGame(auth.authToken(), currGame.gameID());
+            //var gamePrinter = new PrintBoard(currColor, currGame.game());
+            //gamePrinter.print();
             gameState = GameState.OBSERVING;
             return "";
         }

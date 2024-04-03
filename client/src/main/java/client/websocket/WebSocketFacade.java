@@ -7,6 +7,7 @@ import webSocketMessages.serverMessages.ErrorMessage;
 import webSocketMessages.serverMessages.LoadGameMessage;
 import webSocketMessages.serverMessages.Notification;
 import webSocketMessages.serverMessages.ServerMessage;
+import webSocketMessages.userCommands.JoinObserverCom;
 import webSocketMessages.userCommands.JoinPlayerCom;
 
 import javax.websocket.*;
@@ -55,6 +56,15 @@ public class WebSocketFacade extends Endpoint {
             this.session.getBasicRemote().sendText(new Gson().toJson(joinCom));
         } catch (IOException ex) {
             throw new ResException(500, ex.getMessage());
+        }
+    }
+
+    public void observeGame(String authToken, Integer gameID) throws ResException {
+        try {
+            var observeCom = new JoinObserverCom(authToken, gameID);
+            this.session.getBasicRemote().sendText(new Gson().toJson(observeCom));
+        } catch (IOException e) {
+            throw new ResException(500, e.getMessage());
         }
     }
 }
