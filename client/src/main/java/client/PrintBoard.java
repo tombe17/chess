@@ -14,26 +14,26 @@ import static ui.EscapeSequences.*;
 public class PrintBoard {
     private static final int BOARD_SIZE_IN_SQUARES = 8;
     private static final int SQUARE_SIZE_IN_CHARS = 3;
-    private final String teamColor;
+    private final ChessGame.TeamColor teamColor;
     private static ChessGame game;
     private final String[] blackHeaders = { "h", "g", "f", "e", "d", "c", "b", "a" };
     private final String[] blackSideHeaders = { "1", "2", "3", "4", "5", "6", "7", "8" };
     private final String[] whiteHeaders = { "a", "b", "c", "d", "e", "f", "g", "h" };
     private final String[] whiteSideHeaders = { "8", "7", "6", "5", "4", "3", "2", "1" };
 
-    public PrintBoard(String teamColor, ChessGame game) {
+    public PrintBoard(ChessGame.TeamColor teamColor, ChessGame game) {
         this.teamColor = teamColor;
         PrintBoard.game = game;
     }
 
     public void print() {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
-
-        if (this.teamColor.equals("BLACK")) {
-            printBlack(out);
-        } else {
-            printWhite(out);
+        if (teamColor != null) {
+            if (this.teamColor.equals(ChessGame.TeamColor.BLACK)) {
+                printBlack(out);
+            }
         }
+        printWhite(out);
         //out.println();
     }
 

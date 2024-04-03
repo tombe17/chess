@@ -1,5 +1,6 @@
 package client;
 
+import chess.ChessGame;
 import client.websocket.NotificationHandler;
 import client.websocket.WebSocketFacade;
 import exception.ResException;
@@ -21,7 +22,7 @@ public class EvalClient {
     private GameState gameState = GameState.NOTACTIVE;
 
     private GameData currGame = null;
-    private String currColor = null;
+    private ChessGame.TeamColor currColor = null;
 
     public HashMap<String, GameData> gamesIndex = new HashMap<>();
     public EvalClient(String serverUrl, NotificationHandler notificationHandler) {
@@ -127,13 +128,19 @@ public class EvalClient {
         var gameToGet = params[0];
         var gameID = gamesIndex.get(gameToGet).gameID();
         server.joinGame(teamColor, gameID);
+        currGame = gamesIndex.get(gameToGet);
+        if (teamColor.equals("WHITE")) {
+            currColor = ChessGame.TeamColor.WHITE;
+        } else {
+            currColor = ChessGame.TeamColor.BLACK;
+        }
+
+
         ws = new WebSocketFacade(serverUrl, notificationHandler);
         var auth = server.getAuth();
-        ws.joinGame(auth.username());
+        ws.joinGame(auth.authToken(), currGame.gameID(), currColor);
 
-        currGame = gamesIndex.get(gameToGet);
-        currColor = teamColor;
-        var gamePrinter = new PrintBoard(teamColor, currGame.game());
+        var gamePrinter = new PrintBoard(currColor, currGame.game());
         gamePrinter.print();
         gameState = GameState.PLAYING;
         return "";
@@ -150,8 +157,8 @@ public class EvalClient {
             server.joinGame(null, gameID);
 
             currGame = gamesIndex.get(gameToGet);
-            currColor = "OBSERVER";
-            var gamePrinter = new PrintBoard("OBSERVER", currGame.game());
+            currColor = null;
+            var gamePrinter = new PrintBoard(currColor, currGame.game());
             gamePrinter.print();
             gameState = GameState.OBSERVING;
             return "";

@@ -10,20 +10,20 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ConnectionManager {
     public final ConcurrentHashMap<String, Connection> connections = new ConcurrentHashMap<>();
 
-    public void add(String username, Integer gameID, Session session) {
-        var connection = new Connection(username, session);
-        connections.put(username, connection);
+    public void add(String authToken, Integer gameID, Session session) {
+        var connection = new Connection(authToken, gameID, session);
+        connections.put(authToken, connection);
     }
 
-    public void remove(Integer gameID, String nameToRemove) {
+    public void remove(String nameToRemove) {
         connections.remove(nameToRemove);
     }
 
-    public void broadcast(String excludeName, ServerMessage notification) throws IOException {
+    public void broadcast(String excludeToken, Integer gameID, ServerMessage notification) throws IOException {
         var removeList = new ArrayList<Connection>();
         for (var c : connections.values()) {
             if (c.session.isOpen()) {
-                if (!c.username.equals(excludeName)) {
+                if (!c.authToken.equals(excludeToken) && c.gameID.equals(gameID)) { //must be in the game and not the root client
                     c.send(notification.toString());
                 }
             } else {
@@ -32,7 +32,7 @@ public class ConnectionManager {
         }
 
         for (var c : removeList) {
-            connections.remove(c.username);
+            connections.remove(c.authToken);
         }
     }
 }

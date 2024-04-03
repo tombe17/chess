@@ -1,8 +1,10 @@
 package client.websocket;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
 import exception.ResException;
 import webSocketMessages.serverMessages.ServerMessage;
+import webSocketMessages.userCommands.JoinPlayerCom;
 
 import javax.websocket.*;
 import java.io.IOException;
@@ -25,6 +27,7 @@ public class WebSocketFacade extends Endpoint {
             this.session.addMessageHandler(new MessageHandler.Whole<String>() {
                 @Override
                 public void onMessage(String s) {
+                    System.out.println(s);
                     ServerMessage message = new Gson().fromJson(s, ServerMessage.class);
                     notificationHandler.notify(message);
                 }
@@ -37,12 +40,13 @@ public class WebSocketFacade extends Endpoint {
 
     @Override
     public void onOpen(Session session, EndpointConfig endpointConfig) {
-        System.out.print("ws opened");
+        System.out.println("ws opened");
     }
 
-    public void joinGame(String username) throws ResException {
+    public void joinGame(String authToken, Integer gameID, ChessGame.TeamColor playerColor) throws ResException {
         try {
-            this.session.getBasicRemote().sendText(username + " joined");
+            var joinCom = new JoinPlayerCom(authToken, gameID, playerColor);
+            this.session.getBasicRemote().sendText(new Gson().toJson(joinCom));
         } catch (IOException ex) {
             throw new ResException(500, ex.getMessage());
         }
