@@ -50,4 +50,6 @@ public class MemoryGameAccess implements GameDAO {
     public void clear() {
         games.clear();
     }
+
+    public void makeMove(ChessGame game, int gameID) {}
 }

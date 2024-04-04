@@ -1,10 +1,13 @@
 package services;
 
+import chess.ChessGame;
+import chess.InvalidMoveException;
 import dataAccess.DataAccessException;
 import dataAccess.GameDAO;
 import exception.ResException;
 import model.GameData;
 import model.JoinGameRequest;
+import webSocketMessages.userCommands.MakeMoveCom;
 
 import java.util.Collection;
 import java.util.Objects;
@@ -54,6 +57,19 @@ public class GameService {
             }
         } catch(DataAccessException e) {
             throw new ResException(500, e.getMessage());
+        }
+    }
+
+    public void makeMove(MakeMoveCom moveCmd) throws ResException, InvalidMoveException {
+        System.out.println("In makeMove GS");
+        ChessGame game = getGame(moveCmd.getGameID()).game();
+        //make sure it's your turn
+        if (moveCmd.getTeamColor() == game.getTeamTurn()) {
+            //validate move
+            game.makeMove(moveCmd.getMove());
+            gameAccess.makeMove(game, moveCmd.getGameID());
+        } else {
+            System.out.println("Not your turn");
         }
     }
 

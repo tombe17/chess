@@ -1,6 +1,8 @@
 package client;
 
 import chess.ChessGame;
+import chess.ChessMove;
+import chess.ChessPosition;
 import client.websocket.NotificationHandler;
 import client.websocket.WebSocketFacade;
 import exception.ResException;
@@ -178,11 +180,25 @@ public class EvalClient {
 
     public String makeMove(String[] params) throws ResException {
         assertPlaying();
-        if (params.length == 2) {
-            String startPos = params[0];
-            String endPos = params[1];
+        if (params.length >= 2) {
+            String startPosString = params[0];
+            String endPosString = params[1];
 
-            return "made move " + startPos + " to " + endPos;
+            if (startPosString.length() == 2 && endPosString.length() == 2) {
+                //turn into an actual position
+                var startPos = makePosition(startPosString);
+                var endPos = makePosition(endPosString);
+                //add in end promotion if pawn
+
+                //send to server
+                var auth = server.getAuth();
+                ws.makeMove(auth.authToken(), new ChessMove(startPos, endPos, null), currColor, currGame.gameID());
+
+                //update ws
+                return "made move ";
+            }
+            return "invalid move. Format move as: e2 e4";
+
         }
         return "failed to move";
     }
@@ -214,6 +230,28 @@ public class EvalClient {
         assertInGame();
         gameState = GameState.NOTACTIVE;
         return "in leave";
+    }
+
+    public ChessPosition makePosition(String pos) {
+        char col = pos.charAt(0);
+        char row = pos.charAt(1);
+        int colNum;
+        switch (col) {
+            case 'a' -> colNum = 1;
+            case 'b' -> colNum = 2;
+            case 'c' -> colNum = 3;
+            case 'd' -> colNum = 4;
+            case 'e' -> colNum = 5;
+            case 'f' -> colNum = 6;
+            case 'g' -> colNum = 7;
+            case 'h' -> colNum = 8;
+            default -> {
+                return null;
+            }
+        }
+        int rowNum = row - '0';
+        System.out.println("Row: " + rowNum + " Col: " + colNum);
+        return new ChessPosition(rowNum, colNum);
     }
 
     public String commandText() {

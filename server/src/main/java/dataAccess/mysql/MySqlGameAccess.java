@@ -75,6 +75,21 @@ public class MySqlGameAccess implements GameDAO {
             throw new ResException(500, String.format("Unable to read data: %s", e.getMessage()));
         }
     }
+    @Override
+    public void makeMove(ChessGame game, int gameID) throws ResException {
+        try (var conn = DatabaseManager.getConnection()) {
+            String statement = "UPDATE game SET game = ? WHERE gameID =?";
+            var gameJson = new Gson().toJson(game);
+
+            try (var ps = conn.prepareStatement(statement)) {
+                ps.setString(1, gameJson);
+                ps.setInt(2, gameID);
+                ps.executeUpdate();
+            }
+        } catch (Exception e) {
+            throw new ResException(500, String.format("Unable to read data: %s", e.getMessage()));
+        }
+    }
 
     @Override
     public Collection<GameData> getAllGames() throws ResException {

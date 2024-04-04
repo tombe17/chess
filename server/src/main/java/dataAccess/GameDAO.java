@@ -1,5 +1,6 @@
 package dataAccess;
 
+import chess.ChessGame;
 import exception.ResException;
 import model.GameData;
 
@@ -11,4 +12,6 @@ public interface GameDAO {
     void updateGame(String playerColor, String username, int gameID) throws DataAccessException, ResException; //UPDATE game in db w/ adding player/move
     Collection<GameData> getAllGames() throws DataAccessException, ResException; //GET all games
     void clear() throws ResException; //DELETE all games
+
+    void makeMove(ChessGame game, int gameID) throws ResException;
 }

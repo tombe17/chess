@@ -1,5 +1,7 @@
 package client;
 
+import chess.ChessGame;
+import chess.ChessMove;
 import com.google.gson.Gson;
 import exception.ResException;
 import model.*;
@@ -127,4 +129,5 @@ public class ServerFacade {
     }
 
     public AuthData getAuth() {return auth; }
+
 }

@@ -19,7 +19,7 @@ public class ConnectionManager {
         connections.remove(nameToRemove);
     }
 
-    public void broadcast(String excludeToken, Integer gameID, ServerMessage notification) throws IOException {
+    public void broadcast(String excludeToken, Integer gameID, ServerMessage notification, ServerMessage.ServerMessageType type) throws IOException {
         var removeList = new ArrayList<Connection>();
         for (var c : connections.values()) {
             if (c.session.isOpen()) {
