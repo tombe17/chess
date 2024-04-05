@@ -47,9 +47,8 @@ public class Repl implements NotificationHandler {
     }
     @Override
     public void loadGame(LoadGameMessage message) {
-        //get game and then print it
+        client.setGame(message.getGame());
         new PrintBoard(message.getTeamColor(), message.getGame().game()).print();
-
         printPrompt();
     }
     @Override

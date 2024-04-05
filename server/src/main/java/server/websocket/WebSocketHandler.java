@@ -45,13 +45,12 @@ public class WebSocketHandler {
 
     private void joinPlayer(JoinPlayerCom cmd, Session session) throws IOException, ResException {
         System.out.println("In join Player WS");
-        connections.add(cmd.getAuthString(), cmd.getGameID(), session);
-
-        //broadcast notification
         var auth = userService.getAuth(cmd.getAuthString());
+        connections.add(auth.username(), cmd.getGameID(), session);
+
         var mes = String.format("%s joined as %s", auth.username(), cmd.getPlayerColor());
         var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, mes);
-        connections.broadcast(cmd.getAuthString(), cmd.getGameID(), notification, ServerMessage.ServerMessageType.NOTIFICATION);
+        connections.broadcast(auth.username(), cmd.getGameID(), notification);
 
         //load game for root client
         var notifyLoad = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameService.getGame(cmd.getGameID()), cmd.getPlayerColor());
@@ -60,15 +59,15 @@ public class WebSocketHandler {
 
     private void joinObserver(JoinObserverCom cmd, Session session) throws ResException, IOException {
         System.out.println("In join Player WS");
-        connections.add(cmd.getAuthString(), cmd.getGameID(), session);
+        var auth = userService.getAuth(cmd.getAuthString());
+        connections.add(auth.username(), cmd.getGameID(), session);
 
         var notifyLoad = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameService.getGame(cmd.getGameID()), null);
         session.getRemote().sendString(notifyLoad.toString());
 
-        var auth = userService.getAuth(cmd.getAuthString());
         var mes = String.format("%s joined as an observer", auth.username());
         var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, mes);
-        connections.broadcast(cmd.getAuthString(), cmd.getGameID(), notification, ServerMessage.ServerMessageType.NOTIFICATION);
+        connections.broadcast(auth.username(), cmd.getGameID(), notification);
     }
 
     private void makeMove(MakeMoveCom cmd, Session session) throws ResException, InvalidMoveException, IOException {
@@ -76,13 +75,18 @@ public class WebSocketHandler {
         //first validate move if good then update game, then broadcast
         gameService.makeMove(cmd);
 
-        var notifyLoad = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameService.getGame(cmd.getGameID()), null);
-        connections.broadcast("", cmd.getGameID(), notifyLoad, ServerMessage.ServerMessageType.LOAD_GAME);
+        //get black auth, exclude it and send a personal copy of game for them to load
+        var blackUser = gameService.getGame(cmd.getGameID()).blackUsername();
+        var notifyLoad = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameService.getGame(cmd.getGameID()), ChessGame.TeamColor.BLACK);
+        connections.getConnection(blackUser).session.getRemote().sendString(notifyLoad.toString());
+
+        notifyLoad = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameService.getGame(cmd.getGameID()), null);
+        connections.broadcast(blackUser, cmd.getGameID(), notifyLoad);
 
         var auth = userService.getAuth(cmd.getAuthString());
         var mes = String.format("%s moved %s", auth.username(), moveToString(cmd.getMove()));
         var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, mes);
-        connections.broadcast(cmd.getAuthString(), cmd.getGameID(), notification, ServerMessage.ServerMessageType.NOTIFICATION);
+        connections.broadcast(auth.username(), cmd.getGameID(), notification);
 
         //check if they are in checkmate or stalemate
         var game = gameService.getGame(cmd.getGameID()).game();
@@ -106,8 +110,8 @@ public class WebSocketHandler {
         var auth = userService.getAuth(cmd.getAuthString());
         var mes = String.format("%s resigned.", auth.username());
         var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, mes);
-        connections.broadcast("", cmd.getGameID(), notification, ServerMessage.ServerMessageType.NOTIFICATION);
-        connections.remove(cmd.getAuthString());
+        connections.broadcast("", cmd.getGameID(), notification);
+        connections.remove(auth.username());
     }
 
     private void leave(LeaveCom cmd, Session session) throws ResException, IOException, DataAccessException {
@@ -125,8 +129,8 @@ public class WebSocketHandler {
         //broadcast then remove their connection
         var mes = String.format("%s left.", auth.username());
         var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, mes);
-        connections.broadcast(cmd.getAuthString(), cmd.getGameID(), notification, ServerMessage.ServerMessageType.NOTIFICATION);
-        connections.remove(cmd.getAuthString());
+        connections.broadcast(auth.username(), cmd.getGameID(), notification);
+        connections.remove(auth.username());
     }
 
     public String moveToString(ChessMove move) {

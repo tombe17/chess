@@ -280,6 +280,8 @@ public class EvalClient {
         return new ChessPosition(rowNum, colNum);
     }
 
+    public void setGame(GameData gameData) {currGame = gameData;}
+
     public String commandText() {
 
         if (state == State.SIGNEDOUT) {
