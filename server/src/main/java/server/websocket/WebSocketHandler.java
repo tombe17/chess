@@ -12,6 +12,7 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import services.GameService;
 import services.UserService;
+import webSocketMessages.serverMessages.ErrorMessage;
 import webSocketMessages.serverMessages.LoadGameMessage;
 import webSocketMessages.serverMessages.Notification;
 import webSocketMessages.serverMessages.ServerMessage;
@@ -44,7 +45,6 @@ public class WebSocketHandler {
     }
 
     private void joinPlayer(JoinPlayerCom cmd, Session session) throws IOException, ResException {
-        System.out.println("In join Player WS");
         var auth = userService.getAuth(cmd.getAuthString());
         connections.add(auth.username(), cmd.getGameID(), session);
 
@@ -58,7 +58,6 @@ public class WebSocketHandler {
     }
 
     private void joinObserver(JoinObserverCom cmd, Session session) throws ResException, IOException {
-        System.out.println("In join Player WS");
         var auth = userService.getAuth(cmd.getAuthString());
         connections.add(auth.username(), cmd.getGameID(), session);
 
@@ -70,42 +69,51 @@ public class WebSocketHandler {
         connections.broadcast(auth.username(), cmd.getGameID(), notification);
     }
 
-    private void makeMove(MakeMoveCom cmd, Session session) throws ResException, InvalidMoveException, IOException {
-        System.out.println("In MakeMove WS");
+    private void makeMove(MakeMoveCom cmd, Session session) throws ResException, IOException {
         //first validate move if good then update game, then broadcast
-        gameService.makeMove(cmd);
+        try {
+            gameService.makeMove(cmd);
+            var auth = userService.getAuth(cmd.getAuthString());
+            var mes = String.format("%s moved %s", auth.username(), moveToString(cmd.getMove()));
+            var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, mes);
+            connections.broadcast(auth.username(), cmd.getGameID(), notification);
 
-        //get black auth, exclude it and send a personal copy of game for them to load
-        var blackUser = gameService.getGame(cmd.getGameID()).blackUsername();
-        var notifyLoad = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameService.getGame(cmd.getGameID()), ChessGame.TeamColor.BLACK);
-        connections.getConnection(blackUser).session.getRemote().sendString(notifyLoad.toString());
+            var gameData = gameService.getGame(cmd.getGameID());
+            var notifyLoad = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameService.getGame(cmd.getGameID()), ChessGame.TeamColor.BLACK);
+            connections.getConnection(gameData.blackUsername()).session.getRemote().sendString(notifyLoad.toString());
+            notifyLoad = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameService.getGame(cmd.getGameID()), null);
+            connections.broadcast(gameData.blackUsername(), cmd.getGameID(), notifyLoad);
 
-        notifyLoad = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameService.getGame(cmd.getGameID()), null);
-        connections.broadcast(blackUser, cmd.getGameID(), notifyLoad);
+            ChessGame.TeamColor oppTeam;
+            String oppTeamUser;
+            if (cmd.getTeamColor().equals(ChessGame.TeamColor.WHITE)) {
+                oppTeam = ChessGame.TeamColor.BLACK;
+                oppTeamUser = gameData.blackUsername();
+            } else {
+                oppTeam = ChessGame.TeamColor.WHITE;
+                oppTeamUser = gameData.whiteUsername();
+            }
 
-        var auth = userService.getAuth(cmd.getAuthString());
-        var mes = String.format("%s moved %s", auth.username(), moveToString(cmd.getMove()));
-        var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, mes);
-        connections.broadcast(auth.username(), cmd.getGameID(), notification);
-
-        //check if they are in checkmate or stalemate
-        var game = gameService.getGame(cmd.getGameID()).game();
-        ChessGame.TeamColor oppTeam;
-        if (cmd.getTeamColor().equals(ChessGame.TeamColor.WHITE)) {
-            oppTeam = ChessGame.TeamColor.BLACK;
-        } else {
-            oppTeam = ChessGame.TeamColor.WHITE;
-        }
-
-        if (game.isInCheck(oppTeam)) {
-            System.out.println("CHECKMATE!");
-        } else if (game.isInStalemate(oppTeam)) {
-            System.out.println("STALEMATE!");
+            if (gameData.game().isInCheckmate(oppTeam)) {
+                mes = String.format("%s was checkmated!", oppTeamUser);
+                notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, mes);
+                connections.broadcast(auth.username(), cmd.getGameID(), notification);
+            } else if (gameData.game().isInStalemate(oppTeam)) {
+                mes = "Stalemate!";
+                notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, mes);
+                connections.broadcast("", cmd.getGameID(), notification);
+            } else if (gameData.game().isInCheck(oppTeam)) {
+                mes = String.format("%s is in check!", oppTeamUser);
+                notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, mes);
+                connections.broadcast(auth.username(), cmd.getGameID(), notification);
+            }
+        } catch (InvalidMoveException e) {
+            var error = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, e.getMessage());
+            session.getRemote().sendString(error.toString());
         }
     }
 
     private void resign(ResignCom cmd, Session session) throws ResException, IOException {
-        System.out.println("In resign WS");
         //broadcast then remove their connection
         var auth = userService.getAuth(cmd.getAuthString());
         var mes = String.format("%s resigned.", auth.username());
@@ -115,7 +123,6 @@ public class WebSocketHandler {
     }
 
     private void leave(LeaveCom cmd, Session session) throws ResException, IOException, DataAccessException {
-        System.out.println("In leave WS");
         var auth = userService.getAuth(cmd.getAuthString());
         var game = gameService.getGame(cmd.getGameID());
         String teamColor;

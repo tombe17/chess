@@ -190,11 +190,11 @@ public class ChessGame {
                         }
                     }
                 }
-
             }
+            //Only King left
+            return true;
         }
-        //Only King left
-        return true;
+        return false;
     }
 
     /**
