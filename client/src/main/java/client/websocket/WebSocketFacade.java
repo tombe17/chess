@@ -2,15 +2,14 @@ package client.websocket;
 
 import chess.ChessGame;
 import chess.ChessMove;
+import chess.ChessPosition;
 import com.google.gson.Gson;
 import exception.ResException;
 import webSocketMessages.serverMessages.ErrorMessage;
 import webSocketMessages.serverMessages.LoadGameMessage;
 import webSocketMessages.serverMessages.Notification;
 import webSocketMessages.serverMessages.ServerMessage;
-import webSocketMessages.userCommands.JoinObserverCom;
-import webSocketMessages.userCommands.JoinPlayerCom;
-import webSocketMessages.userCommands.MakeMoveCom;
+import webSocketMessages.userCommands.*;
 
 import javax.websocket.*;
 import java.io.IOException;
@@ -74,6 +73,24 @@ public class WebSocketFacade extends Endpoint {
         try {
             var moveCom = new MakeMoveCom(authToken, gameID, currColor, chessMove);
             this.session.getBasicRemote().sendText(new Gson().toJson(moveCom));
+        } catch (IOException e) {
+            throw new ResException(500, e.getMessage());
+        }
+    }
+
+    public void resign(String authToken, int gameID) throws ResException {
+        try {
+            var resignCom = new ResignCom(authToken, gameID);
+            this.session.getBasicRemote().sendText(new Gson().toJson(resignCom));
+        } catch (IOException e) {
+            throw new ResException(500, e.getMessage());
+        }
+    }
+
+    public void leave(String authToken, int gameID) throws ResException {
+        try {
+            var leaveCom = new LeaveCom(authToken, gameID);
+            this.session.getBasicRemote().sendText(new Gson().toJson(leaveCom));
         } catch (IOException e) {
             throw new ResException(500, e.getMessage());
         }

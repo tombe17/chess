@@ -7,6 +7,7 @@ import dataAccess.GameDAO;
 import exception.ResException;
 import model.GameData;
 import model.JoinGameRequest;
+import webSocketMessages.userCommands.LeaveCom;
 import webSocketMessages.userCommands.MakeMoveCom;
 
 import java.util.Collection;
@@ -71,6 +72,10 @@ public class GameService {
         } else {
             System.out.println("Not your turn");
         }
+    }
+
+    public void playerLeave(LeaveCom cmd, String teamColor) throws DataAccessException, ResException {
+        gameAccess.updateGame(teamColor, null, cmd.getGameID());
     }
 
     public Collection<GameData> getAllGames() throws ResException {

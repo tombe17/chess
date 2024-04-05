@@ -2,6 +2,7 @@ package client;
 
 import chess.ChessGame;
 import chess.ChessMove;
+import chess.ChessPiece;
 import chess.ChessPosition;
 import client.websocket.NotificationHandler;
 import client.websocket.WebSocketFacade;
@@ -189,18 +190,26 @@ public class EvalClient {
                 var startPos = makePosition(startPosString);
                 var endPos = makePosition(endPosString);
                 //add in end promotion if pawn
+                ChessPiece.PieceType pieceType = null;
+                if (params.length == 3) {
+                    String promoType = params[2];
+                    switch (promoType) {
+                        case "queen" -> pieceType = ChessPiece.PieceType.QUEEN;
+                        case "rook" -> pieceType = ChessPiece.PieceType.ROOK;
+                        case "knight" -> pieceType = ChessPiece.PieceType.KNIGHT;
+                        case "bishop" -> pieceType = ChessPiece.PieceType.BISHOP;
+                    }
+                }
 
-                //send to server and update game
-                var auth = server.getAuth();
-                ws.makeMove(auth.authToken(), new ChessMove(startPos, endPos, null), currColor, currGame.gameID());
-                //
-
-                return "";
+                if (startPos != null && endPos != null) {
+                    //send to server and update game
+                    var auth = server.getAuth();
+                    ws.makeMove(auth.authToken(), new ChessMove(startPos, endPos, pieceType), currColor, currGame.gameID());
+                    return "";
+                }
             }
-            return "invalid move. Format move as: e2 e4";
-
         }
-        return "failed to move";
+        return "invalid move. Format move as: e2 e4";
     }
 
     public String showMoves(String[] params) throws ResException {
@@ -215,21 +224,31 @@ public class EvalClient {
 
     public String resign() throws ResException {
         assertPlaying();
-        gameState = GameState.NOTACTIVE;
-        return "in resign";
+
+        var auth = server.getAuth();
+        ws.resign(auth.authToken(), currGame.gameID());
+
+        gameState = GameState.FINISHED;
+        return "";
     }
 
     public String redraw() throws ResException {
         assertInGame();
+        //refresh game
+
         var gamePrinter = new PrintBoard(currColor, currGame.game());
         gamePrinter.print();
-        return "in redraw";
+        return "";
     }
 
     public String leave() throws ResException {
         assertInGame();
+
+        var auth = server.getAuth();
+        ws.leave(auth.authToken(), currGame.gameID());
+
         gameState = GameState.NOTACTIVE;
-        return "in leave";
+        return "";
     }
 
     public ChessPosition makePosition(String pos) {
@@ -250,6 +269,9 @@ public class EvalClient {
             }
         }
         int rowNum = row - '0';
+        if (rowNum > 8 || rowNum < 1) {
+            return null;
+        }
         System.out.println("Row: " + rowNum + " Col: " + colNum);
         return new ChessPosition(rowNum, colNum);
     }

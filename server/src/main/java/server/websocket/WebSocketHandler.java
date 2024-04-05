@@ -5,6 +5,7 @@ import chess.ChessMove;
 import chess.ChessPosition;
 import chess.InvalidMoveException;
 import com.google.gson.Gson;
+import dataAccess.DataAccessException;
 import exception.ResException;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
@@ -14,12 +15,10 @@ import services.UserService;
 import webSocketMessages.serverMessages.LoadGameMessage;
 import webSocketMessages.serverMessages.Notification;
 import webSocketMessages.serverMessages.ServerMessage;
-import webSocketMessages.userCommands.JoinObserverCom;
-import webSocketMessages.userCommands.JoinPlayerCom;
-import webSocketMessages.userCommands.MakeMoveCom;
-import webSocketMessages.userCommands.UserGameCommand;
+import webSocketMessages.userCommands.*;
 
 import java.io.IOException;
+import java.util.Objects;
 
 @WebSocket
 public class WebSocketHandler {
@@ -32,13 +31,15 @@ public class WebSocketHandler {
         this.gameService = gameService;
     }
     @OnWebSocketMessage
-    public void onMessage(Session session, String message) throws IOException, ResException, InvalidMoveException {
+    public void onMessage(Session session, String message) throws IOException, ResException, InvalidMoveException, DataAccessException {
         //figure out which action it is then based on then perform a function
         UserGameCommand cmd = new Gson().fromJson(message, UserGameCommand.class);
         switch (cmd.getCommandType()) {
             case JOIN_PLAYER -> joinPlayer(new Gson().fromJson(message, JoinPlayerCom.class), session);
             case JOIN_OBSERVER -> joinObserver(new Gson().fromJson(message, JoinObserverCom.class), session);
             case MAKE_MOVE -> makeMove(new Gson().fromJson(message, MakeMoveCom.class), session);
+            case RESIGN -> resign(new Gson().fromJson(message, ResignCom.class), session);
+            case LEAVE -> leave(new Gson().fromJson(message, LeaveCom.class), session);
         }
     }
 
@@ -97,6 +98,35 @@ public class WebSocketHandler {
         } else if (game.isInStalemate(oppTeam)) {
             System.out.println("STALEMATE!");
         }
+    }
+
+    private void resign(ResignCom cmd, Session session) throws ResException, IOException {
+        System.out.println("In resign WS");
+        //broadcast then remove their connection
+        var auth = userService.getAuth(cmd.getAuthString());
+        var mes = String.format("%s resigned.", auth.username());
+        var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, mes);
+        connections.broadcast("", cmd.getGameID(), notification, ServerMessage.ServerMessageType.NOTIFICATION);
+        connections.remove(cmd.getAuthString());
+    }
+
+    private void leave(LeaveCom cmd, Session session) throws ResException, IOException, DataAccessException {
+        System.out.println("In leave WS");
+        var auth = userService.getAuth(cmd.getAuthString());
+        var game = gameService.getGame(cmd.getGameID());
+        String teamColor;
+        if (Objects.equals(game.whiteUsername(), auth.username())) {
+            teamColor = "WHITE";
+        } else {
+            teamColor = "BLACK";
+        }
+        gameService.playerLeave(cmd, teamColor);
+
+        //broadcast then remove their connection
+        var mes = String.format("%s left.", auth.username());
+        var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, mes);
+        connections.broadcast(cmd.getAuthString(), cmd.getGameID(), notification, ServerMessage.ServerMessageType.NOTIFICATION);
+        connections.remove(cmd.getAuthString());
     }
 
     public String moveToString(ChessMove move) {

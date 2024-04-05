@@ -42,21 +42,18 @@ public class Repl implements NotificationHandler {
 
     @Override
     public void notify(Notification notification) {
-        System.out.println("Printing notification");
         System.out.println(EscapeSequences.SET_TEXT_COLOR_YELLOW + notification.getMessage());
         printPrompt();
     }
     @Override
     public void loadGame(LoadGameMessage message) {
         //get game and then print it
-        System.out.println("Printing game");
         new PrintBoard(message.getTeamColor(), message.getGame().game()).print();
 
         printPrompt();
     }
     @Override
     public void error(ErrorMessage error) {
-        System.out.println("Sending error");
         System.out.println(EscapeSequences.SET_TEXT_COLOR_RED + error.getMessage());
         printPrompt();
     }

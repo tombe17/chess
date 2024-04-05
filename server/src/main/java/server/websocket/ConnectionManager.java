@@ -15,8 +15,8 @@ public class ConnectionManager {
         connections.put(authToken, connection);
     }
 
-    public void remove(String nameToRemove) {
-        connections.remove(nameToRemove);
+    public void remove(String authToRemove) {
+        connections.remove(authToRemove);
     }
 
     public void broadcast(String excludeToken, Integer gameID, ServerMessage notification, ServerMessage.ServerMessageType type) throws IOException {
