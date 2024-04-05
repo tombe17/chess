@@ -23,7 +23,6 @@ public class EvalClient {
     private final String serverUrl;
     private State state = State.SIGNEDOUT;
     private GameState gameState = GameState.NOTACTIVE;
-
     private GameData currGame = null;
     private ChessGame.TeamColor currColor = null;
 
@@ -189,7 +188,7 @@ public class EvalClient {
                 //turn into an actual position
                 var startPos = makePosition(startPosString);
                 var endPos = makePosition(endPosString);
-                //add in end promotion if pawn
+
                 ChessPiece.PieceType pieceType = null;
                 if (params.length == 3) {
                     String promoType = params[2];
@@ -229,13 +228,16 @@ public class EvalClient {
         ws.resign(auth.authToken(), currGame.gameID());
 
         gameState = GameState.FINISHED;
+        //mark game to not be played
+        currGame = null;
+        currColor = null;
         return "";
     }
 
     public String redraw() throws ResException {
         assertInGame();
         //refresh game
-
+        currGame = gamesIndex.get(currGame.gameName());
         var gamePrinter = new PrintBoard(currColor, currGame.game());
         gamePrinter.print();
         return "";
@@ -248,6 +250,8 @@ public class EvalClient {
         ws.leave(auth.authToken(), currGame.gameID());
 
         gameState = GameState.NOTACTIVE;
+        currColor = null;
+        currGame = null;
         return "";
     }
 

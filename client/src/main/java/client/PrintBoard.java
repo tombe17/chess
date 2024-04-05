@@ -28,6 +28,7 @@ public class PrintBoard {
 
     public void print() {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
+        System.out.println();
         if (teamColor != null ) {
             if (this.teamColor.equals(ChessGame.TeamColor.BLACK)) {
                 printBlack(out);
