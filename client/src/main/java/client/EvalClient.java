@@ -13,6 +13,7 @@ import model.UserData;
 import ui.EscapeSequences;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Objects;
 
@@ -214,9 +215,18 @@ public class EvalClient {
     public String showMoves(String[] params) throws ResException {
         assertPlaying();
         if (params.length == 1) {
-            String pos = params[0];
-
-            return "Showing moves for " + pos;
+            String posString = params[0];
+            var pos = makePosition(posString);
+            var game = currGame.game();
+            Collection<ChessMove> possMoves = game.validMoves(pos);
+            //check if there are moves available (not empty or null) then print board
+            if (possMoves != null) {
+                var printer = new PrintBoard(currColor, game);
+                printer.printForMoves(possMoves, pos);
+            } else {
+                return "No moves available";
+            }
+            return "";
         }
         return "failed to show moves";
     }
@@ -275,7 +285,7 @@ public class EvalClient {
         if (rowNum > 8 || rowNum < 1) {
             return null;
         }
-        System.out.println("Row: " + rowNum + " Col: " + colNum);
+        //System.out.println("Row: " + rowNum + " Col: " + colNum);
         return new ChessPosition(rowNum, colNum);
     }
 

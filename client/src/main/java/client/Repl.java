@@ -43,7 +43,6 @@ public class Repl implements NotificationHandler {
     @Override
     public void notify(Notification notification) {
         System.out.println(EscapeSequences.SET_TEXT_COLOR_YELLOW + notification.getMessage());
-        printPrompt();
     }
     @Override
     public void loadGame(LoadGameMessage message) {
