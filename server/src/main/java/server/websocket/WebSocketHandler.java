@@ -1,5 +1,8 @@
 package server.websocket;
 
+import chess.ChessGame;
+import chess.ChessMove;
+import chess.ChessPosition;
 import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import exception.ResException;
@@ -76,8 +79,51 @@ public class WebSocketHandler {
         connections.broadcast("", cmd.getGameID(), notifyLoad, ServerMessage.ServerMessageType.LOAD_GAME);
 
         var auth = userService.getAuth(cmd.getAuthString());
-        var mes = String.format("%s moved", cmd.getTeamColor());
+        var mes = String.format("%s moved %s", auth.username(), moveToString(cmd.getMove()));
         var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, mes);
         connections.broadcast(cmd.getAuthString(), cmd.getGameID(), notification, ServerMessage.ServerMessageType.NOTIFICATION);
+
+        //check if they are in checkmate or stalemate
+        var game = gameService.getGame(cmd.getGameID()).game();
+        ChessGame.TeamColor oppTeam;
+        if (cmd.getTeamColor().equals(ChessGame.TeamColor.WHITE)) {
+            oppTeam = ChessGame.TeamColor.BLACK;
+        } else {
+            oppTeam = ChessGame.TeamColor.WHITE;
+        }
+
+        if (game.isInCheck(oppTeam)) {
+            System.out.println("CHECKMATE!");
+        } else if (game.isInStalemate(oppTeam)) {
+            System.out.println("STALEMATE!");
+        }
+    }
+
+    public String moveToString(ChessMove move) {
+        String moveString = "";
+
+        moveString = addPosString(move.getStartPosition(), moveString);
+        moveString = moveString + " to ";
+        moveString = addPosString(move.getEndPosition(), moveString);
+
+        return moveString;
+    }
+
+    public String addPosString(ChessPosition position, String string) {
+        int rowNum = position.getRow();
+        var colNum = position.getColumn();
+
+        switch (colNum) {
+            case 1 -> string = string + "a";
+            case 2 -> string = string + "b";
+            case 3 -> string = string + "c";
+            case 4 -> string = string + "d";
+            case 5 -> string = string + "e";
+            case 6 -> string = string + "f";
+            case 7 -> string = string + "g";
+            case 8 -> string = string + "h";
+        }
+        string = string + rowNum;
+        return string;
     }
 }

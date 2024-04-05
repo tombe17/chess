@@ -190,12 +190,12 @@ public class EvalClient {
                 var endPos = makePosition(endPosString);
                 //add in end promotion if pawn
 
-                //send to server
+                //send to server and update game
                 var auth = server.getAuth();
                 ws.makeMove(auth.authToken(), new ChessMove(startPos, endPos, null), currColor, currGame.gameID());
+                //
 
-                //update ws
-                return "made move ";
+                return "";
             }
             return "invalid move. Format move as: e2 e4";
 
