@@ -7,6 +7,7 @@ import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import dataAccess.DataAccessException;
 import exception.ResException;
+import model.GameState;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
@@ -19,13 +20,15 @@ import webSocketMessages.serverMessages.ServerMessage;
 import webSocketMessages.userCommands.*;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Objects;
 
 @WebSocket
 public class WebSocketHandler {
     private final ConnectionManager connections = new ConnectionManager();
-    UserService userService;
-    GameService gameService;
+    private final UserService userService;
+    private final GameService gameService;
+    private final HashMap<Integer, GameState> gameStates = new HashMap<>();
 
     public WebSocketHandler(UserService userService, GameService gameService) {
         this.userService = userService;
@@ -45,67 +48,122 @@ public class WebSocketHandler {
     }
 
     private void joinPlayer(JoinPlayerCom cmd, Session session) throws IOException, ResException {
-        var auth = userService.getAuth(cmd.getAuthString());
-        connections.add(auth.username(), cmd.getGameID(), session);
+        try {
+            var auth = userService.getAuth(cmd.getAuthString());
+            var game = gameService.getGame(cmd.getGameID());
 
-        var mes = String.format("%s joined as %s", auth.username(), cmd.getPlayerColor());
-        var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, mes);
-        connections.broadcast(auth.username(), cmd.getGameID(), notification);
+            if (game != null) {
+                //if the game isn't already there then add to map
+                if (!gameStates.containsKey(cmd.getGameID())) {
+                    gameStates.put(cmd.getGameID(), GameState.ACTIVE);
+                }
 
-        //load game for root client
-        var notifyLoad = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameService.getGame(cmd.getGameID()), cmd.getPlayerColor());
-        session.getRemote().sendString(notifyLoad.toString());
+                var nameToCheck = cmd.getPlayerColor() == ChessGame.TeamColor.WHITE ? game.whiteUsername() : game.blackUsername();
+                if (nameToCheck != null) {
+                    if (nameToCheck.equals(auth.username())) {
+                        connections.add(auth.username(), cmd.getGameID(), session);
+
+                        var mes = String.format("%s joined as %s", auth.username(), cmd.getPlayerColor());
+                        var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, mes);
+                        connections.broadcast(auth.username(), cmd.getGameID(), notification);
+                        //load game for root client
+                        var notifyLoad = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, game, cmd.getPlayerColor());
+                        session.getRemote().sendString(notifyLoad.toString());
+                    } else { //player there
+                        var error = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, String.format("%s is taken.", cmd.getPlayerColor()));
+                        session.getRemote().sendString(error.toString());
+                    }
+                } else { //http request failed
+                    var error = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Empty game.");
+                    session.getRemote().sendString(error.toString());
+                }
+            } else { //bad game ID
+                var error = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Bad Game ID");
+                session.getRemote().sendString(error.toString());
+            }
+        } catch (ResException e) {
+            var error = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, e.getMessage());
+            session.getRemote().sendString(error.toString());
+        }
     }
 
     private void joinObserver(JoinObserverCom cmd, Session session) throws ResException, IOException {
-        var auth = userService.getAuth(cmd.getAuthString());
-        connections.add(auth.username(), cmd.getGameID(), session);
+        try {
+            var auth = userService.getAuth(cmd.getAuthString());
+            var game = gameService.getGame(cmd.getGameID());
+            if (game != null) {
+                connections.add(auth.username(), cmd.getGameID(), session);
 
-        var notifyLoad = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameService.getGame(cmd.getGameID()), null);
-        session.getRemote().sendString(notifyLoad.toString());
+                var notifyLoad = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, game, null);
+                session.getRemote().sendString(notifyLoad.toString());
 
-        var mes = String.format("%s joined as an observer", auth.username());
-        var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, mes);
-        connections.broadcast(auth.username(), cmd.getGameID(), notification);
+                var mes = String.format("%s joined as an observer", auth.username());
+                var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, mes);
+                connections.broadcast(auth.username(), cmd.getGameID(), notification);
+            } else {
+                var error = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Bad Game ID");
+                session.getRemote().sendString(error.toString());
+            }
+        } catch (ResException e) {
+            var error = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, e.getMessage());
+            session.getRemote().sendString(error.toString());
+        }
     }
 
     private void makeMove(MakeMoveCom cmd, Session session) throws ResException, IOException {
         //first validate move if good then update game, then broadcast
         try {
-            gameService.makeMove(cmd);
-            var auth = userService.getAuth(cmd.getAuthString());
-            var mes = String.format("%s moved %s", auth.username(), moveToString(cmd.getMove()));
-            var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, mes);
-            connections.broadcast(auth.username(), cmd.getGameID(), notification);
+            if (gameStates.get(cmd.getGameID()) != GameState.FINISHED) {
+                var auth = userService.getAuth(cmd.getAuthString());
+                var gameData = gameService.getGame(cmd.getGameID());
+                var teamColor = cmd.getTeamColor();
 
-            var gameData = gameService.getGame(cmd.getGameID());
-            var notifyLoad = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameService.getGame(cmd.getGameID()), ChessGame.TeamColor.BLACK);
-            connections.getConnection(gameData.blackUsername()).session.getRemote().sendString(notifyLoad.toString());
-            notifyLoad = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameService.getGame(cmd.getGameID()), null);
-            connections.broadcast(gameData.blackUsername(), cmd.getGameID(), notifyLoad);
+                if (teamColor == null) {
+                    if (auth.username().equals(gameData.whiteUsername())) {
+                        teamColor = ChessGame.TeamColor.WHITE;
+                    } else if (auth.username().equals(gameData.blackUsername())) {
+                        teamColor = ChessGame.TeamColor.BLACK;
+                    }
+                }
 
-            ChessGame.TeamColor oppTeam;
-            String oppTeamUser;
-            if (cmd.getTeamColor().equals(ChessGame.TeamColor.WHITE)) {
-                oppTeam = ChessGame.TeamColor.BLACK;
-                oppTeamUser = gameData.blackUsername();
+                gameService.makeMove(cmd, teamColor);
+                var mes = String.format("%s moved %s", auth.username(), moveToString(cmd.getMove()));
+                var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, mes);
+                connections.broadcast(auth.username(), cmd.getGameID(), notification);
+
+                var notifyLoad = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameService.getGame(cmd.getGameID()), ChessGame.TeamColor.BLACK);
+                connections.getConnection(gameData.blackUsername()).session.getRemote().sendString(notifyLoad.toString());
+                notifyLoad = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameService.getGame(cmd.getGameID()), null);
+                connections.broadcast(gameData.blackUsername(), cmd.getGameID(), notifyLoad);
+
+                ChessGame.TeamColor oppTeam;
+                String oppTeamUser;
+                if (teamColor == ChessGame.TeamColor.WHITE) {
+                    oppTeam = ChessGame.TeamColor.BLACK;
+                    oppTeamUser = gameData.blackUsername();
+                } else {
+                    oppTeam = ChessGame.TeamColor.WHITE;
+                    oppTeamUser = gameData.whiteUsername();
+                }
+
+                if (gameData.game().isInCheckmate(oppTeam)) {
+                    mes = String.format("%s was checkmated!", oppTeamUser);
+                    notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, mes);
+                    connections.broadcast("", cmd.getGameID(), notification);
+                    gameStates.replace(cmd.getGameID(), GameState.FINISHED);
+                } else if (gameData.game().isInStalemate(oppTeam)) {
+                    mes = "Stalemate!";
+                    notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, mes);
+                    connections.broadcast("", cmd.getGameID(), notification);
+                    gameStates.replace(cmd.getGameID(), GameState.FINISHED);
+                } else if (gameData.game().isInCheck(oppTeam)) {
+                    mes = String.format("%s is in check!", oppTeamUser);
+                    notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, mes);
+                    connections.broadcast(auth.username(), cmd.getGameID(), notification);
+                }
             } else {
-                oppTeam = ChessGame.TeamColor.WHITE;
-                oppTeamUser = gameData.whiteUsername();
-            }
-
-            if (gameData.game().isInCheckmate(oppTeam)) {
-                mes = String.format("%s was checkmated!", oppTeamUser);
-                notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, mes);
-                connections.broadcast(auth.username(), cmd.getGameID(), notification);
-            } else if (gameData.game().isInStalemate(oppTeam)) {
-                mes = "Stalemate!";
-                notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, mes);
-                connections.broadcast("", cmd.getGameID(), notification);
-            } else if (gameData.game().isInCheck(oppTeam)) {
-                mes = String.format("%s is in check!", oppTeamUser);
-                notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, mes);
-                connections.broadcast(auth.username(), cmd.getGameID(), notification);
+                var error = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Game is finished, can't move.");
+                session.getRemote().sendString(error.toString());
             }
         } catch (InvalidMoveException e) {
             var error = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, e.getMessage());
@@ -114,12 +172,19 @@ public class WebSocketHandler {
     }
 
     private void resign(ResignCom cmd, Session session) throws ResException, IOException {
-        //broadcast then remove their connection
-        var auth = userService.getAuth(cmd.getAuthString());
-        var mes = String.format("%s resigned.", auth.username());
-        var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, mes);
-        connections.broadcast("", cmd.getGameID(), notification);
-        connections.remove(auth.username());
+        if (gameStates.get(cmd.getGameID()) != GameState.FINISHED) {
+            //broadcast then remove their connection
+            var auth = userService.getAuth(cmd.getAuthString());
+            var mes = String.format("%s resigned.", auth.username());
+            var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, mes);
+            connections.broadcast("", cmd.getGameID(), notification);
+            connections.remove(auth.username());
+
+            gameStates.replace(cmd.getGameID(), GameState.FINISHED);
+        } else {
+            var error = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Game is finished, can't move.");
+            session.getRemote().sendString(error.toString());
+        }
     }
 
     private void leave(LeaveCom cmd, Session session) throws ResException, IOException, DataAccessException {

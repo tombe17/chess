@@ -2,7 +2,6 @@ package client.websocket;
 
 import chess.ChessGame;
 import chess.ChessMove;
-import chess.ChessPosition;
 import com.google.gson.Gson;
 import exception.ResException;
 import webSocketMessages.serverMessages.ErrorMessage;

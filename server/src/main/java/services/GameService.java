@@ -61,16 +61,16 @@ public class GameService {
         }
     }
 
-    public void makeMove(MakeMoveCom moveCmd) throws ResException, InvalidMoveException {
+    public void makeMove(MakeMoveCom moveCmd, ChessGame.TeamColor teamColor) throws ResException, InvalidMoveException {
         System.out.println("In makeMove GS");
         ChessGame game = getGame(moveCmd.getGameID()).game();
         //make sure it's your turn
-        if (moveCmd.getTeamColor() == game.getTeamTurn()) {
+        if (teamColor == game.getTeamTurn()) {
             //validate move
             game.makeMove(moveCmd.getMove());
             gameAccess.makeMove(game, moveCmd.getGameID());
         } else {
-            System.out.println("Not your turn");
+            throw new InvalidMoveException("Not your turn.");
         }
     }
 
