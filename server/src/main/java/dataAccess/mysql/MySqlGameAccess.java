@@ -74,19 +74,6 @@ public class MySqlGameAccess implements GameDAO {
         executeUpdate(statement, gameJson, gameID);
     }
 
-    public void executeUpdate(String statement, String updateInfo, int gameID) throws ResException {
-        try (var conn = DatabaseManager.getConnection()) {
-            try (var ps = conn.prepareStatement(statement)) {
-                ps.setString(1, updateInfo);
-                ps.setInt(2, gameID);
-                ps.executeUpdate();
-            }
-        } catch (Exception e) {
-            throw new ResException(500, String.format("Unable to read data: %s", e.getMessage()));
-        }
-    }
-
-
     @Override
     public Collection<GameData> getAllGames() throws ResException {
         var result = new ArrayList<GameData>();
